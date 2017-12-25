@@ -1,0 +1,4 @@
+<div class="container-fluid">
+  <h2> Gateway Status </h2>
+  <h3> <strong> ready: </strong> <%= gateway_status.ready %> </h3>
+</div>

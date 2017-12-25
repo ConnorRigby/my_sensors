@@ -1,0 +1,5 @@
+<div class="container-fluid">
+  <%= for node <- nodes do %>
+    <%= node %>
+  <% end %>
+</div>

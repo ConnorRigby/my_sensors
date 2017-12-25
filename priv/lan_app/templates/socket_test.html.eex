@@ -1,0 +1,11 @@
+<div class="container-fluid">
+</div>
+
+<script>
+
+var w = new Worker("resource_socket_worker.js");
+w.onmessage = function(event) {
+  alert(JSON.stringify(event.data));
+};
+
+</script>
