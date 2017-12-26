@@ -29,10 +29,19 @@ defmodule MySensors.Gateway do
   defmodule Transport do
     @moduledoc false
     defstruct [:module, :opts, :pid, :ref]
+    @typedoc false
+    @type t :: %__MODULE__{
+      module: module,
+      opts: Keyword.t,
+      pid: GenServer.server,
+      ref: reference(),
+    }
   end
 
   defmodule State do
     @moduledoc false
+    @typedoc false
+    @type t :: %__MODULE__{transports: [Transport.t]}
     defstruct [:transports]
   end
 
@@ -245,7 +254,15 @@ defmodule MySensors.Gateway do
             payload: to_string(time)
           ]
     send_packet = struct(Packet, opts)
-    state.transport.write(send_packet)
+    res = for %{moduld: tp, pid: pid} <- state.transports do
+      tp.write(pid, send_packet)
+    end
+
+    if Enum.all?(res, &match?(:ok, &1)) do
+      :ok
+    else
+      {:error, :failed_to_send}
+    end
   end
 
   @spec send_config(Packet.t, State.t) :: {:ok, Node.t} | {:error, term}
@@ -258,12 +275,17 @@ defmodule MySensors.Gateway do
       type: @internal_CONFIG,
       ack: @ack_FALSE
     ]
+
     send_packet = struct(Packet, opts)
-    for %{moduld: tp, pid: pid} <- state.transports do
-      tp.write(pid,  send_packet)
-      Context.save_config(send_packet)
+    res = for %{moduld: tp, pid: pid} <- state.transports do
+      tp.write(pid, send_packet)
     end
-    state
+
+    if Enum.all?(res, &match?(:ok, &1)) do
+      Context.save_config(send_packet)
+    else
+      {:error, :failed_to_send}
+    end
   end
 
   @spec send_next_available_id(Packet.t, State.t) :: {:ok, Node.t} | {:error, term}
@@ -280,10 +302,14 @@ defmodule MySensors.Gateway do
       payload: node.id
     ]
     send_packet = struct(Packet, packet_opts)
-    for %{module: tp, pid: pid} <- state.transports do
-      IO.puts "hello??: #{inspect state}"
+    res = for %{module: tp, pid: pid} <- state.transports do
       tp.write(pid,  send_packet)
     end
-    state
+
+    if Enum.all?(res, &match?(:ok, &1)) do
+      {:ok, node}
+    else
+      {:error, :failed_to_send}
+    end
   end
 end
