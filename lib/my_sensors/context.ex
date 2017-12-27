@@ -153,9 +153,9 @@ defmodule MySensors.Context do
       |> Multi.run(:broadcast, &Broadcast.notify/1)
       |> Repo.transaction()
       |> case do
-        {:ok, %{broadcast: %Sensor{} = node}} -> {:ok, node}
+        {:ok, %{broadcast: %Sensor{} = sensor}} -> {:ok, sensor}
         {:ok, %{broadcast: _}} -> {:error, :broadcast_fail}
-        _ -> {:error, :node_insert_or_update_fail}
+        _ -> {:error, :sensor_insert_or_update_fail}
       end
   end
 

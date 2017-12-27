@@ -31,11 +31,11 @@ defmodule MySensors.ContextTest do
   test "saves config from a packet" do
     node = Context.new_node()
     packet = %Packet{node_id: node.id,
-                     child_sensor_id: 255,
+                     child_sensor_id: @internal_NODE_SENSOR_ID,
                      payload: "M",
                      command: @command_INTERNAL,
                      ack: false,
-                     type: :internal_CONFIG}
+                     type: @internal_CONFIG}
     {:ok, %Node{} = node} = Context.save_config(packet)
     assert node.config == "M"
     assert Context.get_node(node.id).config == "M"
@@ -44,10 +44,10 @@ defmodule MySensors.ContextTest do
   test "saves protocol from a packet" do
     node = Context.new_node()
     packet = %Packet{node_id: node.id,
-                     child_sensor_id: 255,
+                     child_sensor_id: @internal_NODE_SENSOR_ID,
                      payload: "Some cool protocol",
-                     command: :command_PRESENTATION,
-                     type: :sensor_ARDUINO_NODE}
+                     command: @command_PRESENTATION,
+                     type: @sensor_ARDUINO_NODE}
     {:ok, %Node{} = node} = Context.save_protocol(packet)
     assert node.protocol == "Some cool protocol"
     assert Context.get_node(node.id).protocol == "Some cool protocol"
@@ -57,11 +57,11 @@ defmodule MySensors.ContextTest do
     node = Context.new_node()
     packet = %Packet{
       node_id: node.id,
-      child_sensor_id: 255,
+      child_sensor_id: @internal_NODE_SENSOR_ID,
       payload: 95,
       ack: false,
       command: @command_INTERNAL,
-      type: :internal_BATTERY
+      type: @internal_BATTERY
     }
     {:ok, %Node{} = node} = Context.save_battery_level(packet)
     assert node.battery_level == 95
@@ -72,7 +72,7 @@ defmodule MySensors.ContextTest do
     node = Context.new_node()
     packet = %Packet{
       node_id: node.id,
-      child_sensor_id: 255,
+      child_sensor_id: @internal_NODE_SENSOR_ID,
       payload: "some cool sketch",
       ack: false,
       command: @command_INTERNAL,
@@ -87,7 +87,7 @@ defmodule MySensors.ContextTest do
     node = Context.new_node()
     packet = %Packet{
       node_id: node.id,
-      child_sensor_id: 255,
+      child_sensor_id: @internal_NODE_SENSOR_ID,
       payload: "2.4.3",
       ack: false,
       command: @command_INTERNAL,
@@ -96,5 +96,73 @@ defmodule MySensors.ContextTest do
     {:ok, %Node{} = node} = Context.save_sketch_version(packet)
     assert node.sketch_version == "2.4.3"
     assert Context.get_node(node.id).sketch_version == "2.4.3"
+  end
+
+  test "saves a sensor from a packet" do
+    node = Context.new_node()
+    packet = %Packet{
+      node_id: node.id,
+      child_sensor_id: 5,
+      ack: false,
+      command: @command_PRESENTATION,
+      type: @sensor_BINARY,
+      payload: ""
+    }
+    {:ok, %Sensor{} = sensor} = Context.save_sensor(packet)
+    assert sensor.node_id == node.id
+    assert sensor.child_sensor_id == 5
+  end
+
+  test "saves a sensorvalue to a sensor" do
+    node = Context.new_node()
+    packet = %Packet{
+      node_id: node.id,
+      child_sensor_id: 5,
+      ack: false,
+      command: @command_PRESENTATION,
+      type: @sensor_BINARY,
+      payload: ""
+    }
+    {:ok, %Sensor{} = sensor} = Context.save_sensor(packet)
+
+    sensor_value_packet = %Packet{
+      node_id: node.id,
+      child_sensor_id: 5,
+      ack: false,
+      command: @command_SET,
+      type: @sensor_BINARY,
+      payload: "1"
+    }
+
+    {:ok, %SensorValue{} = sv} = Context.save_sensor_value(sensor_value_packet)
+    assert sv.sensor_id == sensor.id
+    assert sv.value == 1.0
+  end
+
+  test "gets sensors" do
+    node = Context.new_node()
+    packet = %Packet{
+      node_id: node.id,
+      child_sensor_id: 5,
+      ack: false,
+      command: @command_PRESENTATION,
+      type: @sensor_BINARY,
+      payload: ""
+    }
+    {:ok, %Sensor{}} = Context.save_sensor(packet)
+    {:ok, %Sensor{}} = Context.save_sensor(%{packet | child_sensor_id: 6, type: @sensor_DOOR})
+    {:ok, %Sensor{}} = Context.save_sensor(%{packet | child_sensor_id: 20, type: @sensor_HUM})
+
+    res = Context.all_sensors(node.id)
+    assert Enum.count(res) == 3
+
+    assert Context.get_sensor(node.id, 5).node_id == node.id
+    assert Context.get_sensor(node.id, 5).type == "sensor_binary"
+
+    assert Context.get_sensor(node.id, 6).node_id == node.id
+    assert Context.get_sensor(node.id, 6).type == "sensor_door"
+
+    assert Context.get_sensor(node.id, 20).node_id == node.id
+    assert Context.get_sensor(node.id, 20).type == "sensor_hum"
   end
 end
