@@ -6,7 +6,13 @@ defmodule MySensors.Node do
   alias MySensors.{Node, Sensor}
 
   @typedoc @moduledoc
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+    battery_level: number | nil,
+    protocol: String.t | nil,
+    sketch_name: String.t | nil,
+    sketch_version: String.t | nil,
+    config: String.t | nil
+  }
 
   @optional_params [:battery_level, :protocol, :sketch_name, :sketch_version, :config]
   @required_params []

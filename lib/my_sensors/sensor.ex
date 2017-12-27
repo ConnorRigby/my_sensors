@@ -6,7 +6,11 @@ defmodule MySensors.Sensor do
   alias MySensors.{Node, Sensor, SensorValue}
 
   @typedoc @moduledoc
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+    node_id: number,
+    child_sensor_id: number,
+    type: String.t
+  }
 
   @optional_params []
   @required_params [:node_id, :child_sensor_id, :type]
