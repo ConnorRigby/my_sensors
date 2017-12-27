@@ -61,7 +61,7 @@ defmodule MySensors.ContextTest do
       payload: 95,
       ack: false,
       command: @command_INTERNAL,
-      type: @internal_BATTERY
+      type: @internal_BATTERY_LEVEL
     }
     {:ok, %Node{} = node} = Context.save_battery_level(packet)
     assert node.battery_level == 95
@@ -137,6 +137,21 @@ defmodule MySensors.ContextTest do
     {:ok, %SensorValue{} = sv} = Context.save_sensor_value(sensor_value_packet)
     assert sv.sensor_id == sensor.id
     assert sv.value == 1.0
+  end
+
+  test "Won't save a sensor value for an unknown sensor" do
+    node = Context.new_node()
+    sensor_value_packet = %Packet{
+      node_id: node.id,
+      child_sensor_id: 500,
+      ack: false,
+      command: @command_SET,
+      type: @sensor_BINARY,
+      payload: "1"
+    }
+
+    res = Context.save_sensor_value(sensor_value_packet)
+    assert match?({:error, :no_sensor}, res)
   end
 
   test "gets sensors" do

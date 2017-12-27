@@ -14,7 +14,7 @@ defmodule MySensors.BroadcastTest do
     Context.update_node(node, %{sketch_name: "some name"})
     id = node.id
     sketch_name = "some name"
-    assert_receive {:my_sensors, {:insert_or_update, %Node{id: id, sketch_name: sketch_name}}}
+    assert_receive {:my_sensors, {:insert_or_update, %Node{id: ^id, sketch_name: ^sketch_name}}}
   end
 
   test "gets node object notifications on delete" do
