@@ -67,8 +67,13 @@ defmodule MySensors.Transport.Local.LocalNode do
     end
   end
 
-  def terminate(_, state) do
-    Logger.debug "Node #{inspect state.node} going down."
+  def terminate(reason, state) do
+    if reason not in [:shutdown, :normal] do
+      Logger.warn "Local node stopping: #{inspect reason}"
+    end
+    if Keyword.get(state.opts, :delete_on_exit) && state.node do
+      Context.delete_node(state.node.id)
+    end
   end
 
   def handle_call({:add_sensor, type}, _, state) do
@@ -139,7 +144,7 @@ defmodule MySensors.Transport.Local.LocalNode do
 
   def handle_info({:my_sensors, {:delete, %Node{} = node}}, state) do
     if state.node.id == node.id do
-      {:stop, :deleted, state}
+      {:stop, :deleted, %{state | node: nil}}
     else
       {:noreply, state}
     end
@@ -147,7 +152,7 @@ defmodule MySensors.Transport.Local.LocalNode do
 
   def handle_info({:my_sensors, {:insert_or_update, %Node{} = node}}, state) do
     if state.node.id == node.id do
-      {:noreply, %{node: node}}
+      {:noreply, %{state | node: node}}
     else
       {:noreply, state}
     end

@@ -16,6 +16,11 @@ defmodule MySensors.Transport.Local do
     GenServer.call(__MODULE__, {:register, pid})
   end
 
+  @doc "Stop the transport."
+  def stop(reason \\ :shutdown) do
+    GenServer.stop(__MODULE__, reason)
+  end
+
   @doc false
   def write(pid, %Packet{} = packet) do
     GenServer.call(pid, {:write, packet})
@@ -45,7 +50,7 @@ defmodule MySensors.Transport.Local do
   end
 
   def handle_call({:write, packet}, _, state) do
-    IO.puts "writing packet"
+    IO.puts "writing packet: #{inspect packet}"
     for pid <- state.registered do
       send pid, packet
     end

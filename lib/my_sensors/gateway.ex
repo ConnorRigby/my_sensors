@@ -57,25 +57,32 @@ defmodule MySensors.Gateway do
   end
 
   def terminate(reason, _state) do
-    Logger.info "Gateway stopping: #{inspect reason}"
+    Logger.info "Gateway stopping"
+    IO.inspect reason
   end
 
   def handle_call({:add_transport, transport, opts}, _from, state) do
-    case start_transport(transport, opts) do
-      {:ok, pid} ->
-        ref = Process.monitor(pid)
-        tp_opts = [
-          module: transport,
-          opts: opts,
-          pid: pid,
-          ref: ref
-        ]
-        transport = struct(Transport, tp_opts)
-        {:reply, :ok, %{state | transports: [transport | state.transports]}}
-      {:error, reason} ->
-        Logger.error "Failed to start transport: #{transport} - #{inspect reason}"
-        {:reply, :error, state}
+    pid = Process.whereis(transport)
+    if is_pid(pid) and Process.alive?(pid) do
+      {:reply, {:error, {:already_started, pid}}, state}
+    else
+      case start_transport(transport, opts) do
+        {:ok, pid} ->
+          ref = Process.monitor(pid)
+          tp_opts = [
+            module: transport,
+            opts: opts,
+            pid: pid,
+            ref: ref
+          ]
+          transport = struct(Transport, tp_opts)
+          {:reply, :ok, %{state | transports: [transport | state.transports]}}
+          {:error, reason} ->
+            Logger.error "Failed to start transport: #{transport} - #{inspect reason}"
+            {:reply, :error, state}
+          end
     end
+
   end
 
   def handle_cast({:handle_packet, packet}, state) do
@@ -95,6 +102,7 @@ defmodule MySensors.Gateway do
     for %{module: tp, pid: pid} <- state.transports do
       tp.write_packet(pid, packet)
     end
+
     {:noreply, state}
   end
 
@@ -255,7 +263,7 @@ defmodule MySensors.Gateway do
             payload: to_string(time)
           ]
     send_packet = struct(Packet, opts)
-    res = for %{moduld: tp, pid: pid} <- state.transports do
+    res = for %{module: tp, pid: pid} <- state.transports do
       tp.write(pid, send_packet)
     end
 
@@ -278,7 +286,7 @@ defmodule MySensors.Gateway do
     ]
 
     send_packet = struct(Packet, opts)
-    res = for %{moduld: tp, pid: pid} <- state.transports do
+    res = for %{module: tp, pid: pid} <- state.transports do
       tp.write(pid, send_packet)
     end
 

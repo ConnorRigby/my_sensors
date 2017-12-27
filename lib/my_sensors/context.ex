@@ -69,7 +69,7 @@ defmodule MySensors.Context do
     |> case do
       {:ok, %{broadcast: %Node{} = node}} -> {:ok, node}
       {:ok, %{broadcast: _}} -> {:error, :broadcast_fail}
-      err ->
+      _err ->
         {:error, :node_insert_or_update_fail}
     end
   end
