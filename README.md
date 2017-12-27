@@ -1,4 +1,5 @@
 [![CircleCI](https://circleci.com/gh/ConnorRigby/my_sensors.svg?style=svg)](https://circleci.com/gh/ConnorRigby/my_sensors)
+[![Coverage Status](https://coveralls.io/repos/github/ConnorRigby/my_sensors/badge.svg?branch=master)](https://coveralls.io/github/ConnorRigby/my_sensors?branch=master)
 
 # MySensors
 
