@@ -1,15 +1,16 @@
 [![CircleCI](https://circleci.com/gh/ConnorRigby/my_sensors.svg?style=svg)](https://circleci.com/gh/ConnorRigby/my_sensors)
+
 # MySensors
 
 ## Usage
 
-The package can be installed
-by adding `my_sensors` to your list of dependencies in `mix.exs`:
+The [package](https://hex.pm/packages/my_sensors) can be installed by adding `my_sensors` to your list of dependencies in `mix.exs`:
+
 
 ```elixir
 def deps do
   [
-    {:my_sensors, "~> 0.1.0"}
+    {:my_sensors, "~> 0.1.0-rc"}
   ]
 end
 ```
