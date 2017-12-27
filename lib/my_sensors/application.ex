@@ -6,7 +6,6 @@ defmodule MySensors.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-      worker(Task, [MySensors.Repo.Migrator, :run, []], [restart: :transient]),
       supervisor(MySensors.Repo, []),
       worker(MySensors.Broadcast, []),
       worker(MySensors.Gateway, [])

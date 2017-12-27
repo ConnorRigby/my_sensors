@@ -8,6 +8,8 @@ defmodule MySensors.Mixfile do
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
       deps: deps(),
+      package: package(),
+      description: description(),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: ["test": :test,
                           "coveralls": :test,
@@ -38,5 +40,23 @@ defmodule MySensors.Mixfile do
       {:jason, "~> 1.0-rc"},
       {:excoveralls, "~> 0.7", only: :test}
     ]
+  end
+
+  defp package do
+    [
+      licenses: ["MIT"],
+      maintainers: ["konnorrigby@gmail.com"],
+      links: %{
+        "GitHub" => "https://github.com/connorrigby/my_sensors",
+        "MySensors" => "https://www.mysensors.org/"
+        },
+      source_url: "https://github.com/connorrigby/my_sensors"
+    ]
+  end
+
+  defp description do
+    """
+    MySensors is an open source hardware and software community focusing on do-it-yourself home automation and Internet of Things.
+    """
   end
 end
