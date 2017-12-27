@@ -39,4 +39,26 @@ defmodule MySensors.PacketTest do
     assert Packet.command(@command_STREAM) == {:ok, 4}
     assert Packet.command(:command_stream) == {:ok, 4}
   end
+
+  test "parses a binary packet" do
+    result = Packet.decode("1;1;1;1;1;1")
+    assert result == {:ok, %MySensors.Packet{ack: true, child_sensor_id: 1, command: :command_set, node_id: 1, payload: "1", type: :value_hum}}
+  end
+
+  test "bad decode gives an error on unrecognized command part" do
+    result = Packet.decode("1;1;900;1;1;1")
+    assert result == {:error, :command_unknown}
+  end
+
+  test "encodes packet" do
+    packet = %MySensors.Packet{ack: true, child_sensor_id: 1, command: :command_set, node_id: 1, payload: "1", type: :value_hum}
+    result = Packet.encode(packet)
+    assert result == {:ok, "1;1;1;1;1;1"}
+  end
+
+  test "bad encode gives an error on unrecognized command part" do
+    packet = %MySensors.Packet{ack: true, child_sensor_id: 1, command: :command_do_barrel_roll, node_id: 1, payload: "1", type: :value_hum}
+    result = Packet.encode(packet)
+    assert result == {:error, :command_unknown}
+  end
 end

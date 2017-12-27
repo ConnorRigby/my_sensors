@@ -121,7 +121,7 @@ defmodule MySensors.Packet.Constants do
       @value_POWER_FACTOR :value_power_factor
       @value_UNKNOWN :value_unknown
 
-      @internal_BATTERY_LEVEL :internal_batter_level
+      @internal_BATTERY_LEVEL :internal_battery_level
       @internal_TIME :internal_time
       @internal_VERSION :internal_version
       @internal_ID_REQUEST :internal_id_request

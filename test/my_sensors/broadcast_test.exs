@@ -6,7 +6,6 @@ defmodule MySensors.BroadcastTest do
 
   setup do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(MySensors.Repo, ownership_timeout: :infinity)
-    # :ok = Ecto.Adapters.SQL.Sandbox.mode(MySensors.Repo, {:shared, self()})
   end
 
   test "gets node object notifications on update" do
