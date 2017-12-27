@@ -1,5 +1,13 @@
 defmodule MySensors.Broadcast do
-  @moduledoc "Stage to Broadcast Repo Data."
+  @moduledoc """
+  Elixir Broadcast mechanism for MySensors data.
+  Will receive messages in the shape of:
+  `{:my_sensors, {type, data}}`
+  where `type` will be:
+    * `insert_or_update`
+    * `delete`
+  and `data` will be any `Node`, `Sensor`, or `SensorValue` struct.
+  """
 
   use GenServer
 
@@ -8,7 +16,9 @@ defmodule MySensors.Broadcast do
     GenServer.start_link(__MODULE__, [], [name: __MODULE__])
   end
 
-  @doc "Subscribe to events about MySensors Data."
+  @doc """
+  Subscribe to events about MySensors Data.
+  """
   def subscribe(pid) do
     GenServer.call(__MODULE__, {:subscribe, pid})
   end
@@ -33,7 +43,7 @@ defmodule MySensors.Broadcast do
     @moduledoc false
     defstruct [subscribers: []]
     @typedoc false
-    @type t :: %__MODULE__{subscribers: [pid]}
+    @type t :: %__MODULE__{subscribers: [GenServer.server()]}
   end
 
   def init([]) do

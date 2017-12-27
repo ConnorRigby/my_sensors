@@ -1,11 +1,12 @@
 defmodule MySensors.Context do
   @moduledoc "Repo Context for MySensors"
+
   alias MySensors.{Broadcast, Packet, Repo, Node, Sensor, SensorValue}
   alias Ecto.Multi
   import Ecto.Query
   require Logger
 
-  @doc "Get a node"
+  @doc "Get a node by id."
   @spec get_node(integer) :: Node.t | nil
   def get_node(id) do
     Repo.one(from n in Node,
@@ -29,17 +30,22 @@ defmodule MySensors.Context do
       end
   end
 
-  def all_nodes() do
+  @doc "Get all nodes."
+  @spec all_nodes :: [Node.t]
+  def all_nodes do
     Repo.all(Node) |> Repo.preload([sensors: :sensor_values])
   end
 
-  def new_node() do
+  @doc "Get a nenw node."
+  @spec new_node :: Node.t
+  def new_node do
     struct(Node, [])
       |> Node.changeset(%{})
       |> Repo.insert!()
       |> Repo.preload([sensors: :sensor_values])
   end
 
+  @spec insert_or_update_node(map) :: {:ok, Node.t} | {:error, term}
   defp insert_or_update_node(changeset) do
     Multi.new()
     |> Multi.insert_or_update(:insert_or_update, changeset)
@@ -52,6 +58,8 @@ defmodule MySensors.Context do
     end
   end
 
+  @doc "Updata a node."
+  @spec update_node(Node.t, map) :: {:ok, Node.t} | {:error, term}
   def update_node(node, params) do
     changeset = Node.changeset(node, params)
     Multi.new()
@@ -65,7 +73,7 @@ defmodule MySensors.Context do
     end
   end
 
-  @doc "Saves the protocol of a node."
+  @doc "Saves the protocol of a node from a packet"
   @spec save_protocol(Packet.t) :: {:ok, Node.t} | {:error, term}
   def save_protocol(%Packet{} = packet) do
     case get_node(packet.node_id) do
@@ -77,6 +85,8 @@ defmodule MySensors.Context do
     end
   end
 
+  @doc "Save the config of a node from a packet."
+  @spec save_config(Packet.t) :: {:ok, Node.t} | {:error, term}
   def save_config(%Packet{node_id: node_id, payload: config}) do
     case get_node(node_id) do
       %Node{} = node ->
@@ -181,6 +191,8 @@ defmodule MySensors.Context do
     Repo.one(query)
   end
 
+  @doc "Get all sensors."
+  @spec all_sensors(integer) :: [Sensor.t] | nil
   def all_sensors(node_id) do
     query = from s in Sensor,
       where: s.node_id == ^node_id,

@@ -21,6 +21,7 @@ defmodule MySensors.Gateway do
     GenServer.cast(__MODULE__, {:write_packet, packet})
   end
 
+  # Will be called by a transport.
   @doc false
   def handle_packet(%Packet{} = packet) do
     GenServer.cast(__MODULE__, {:handle_packet, packet})
