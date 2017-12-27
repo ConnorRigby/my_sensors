@@ -6,16 +6,14 @@ defmodule MySensors.ContextTest do
 
   use ExUnit.Case, async: false
 
-  @transport __MODULE__
-
   setup do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(MySensors.Repo)
     :ok = Ecto.Adapters.SQL.Sandbox.mode(MySensors.Repo, {:shared, self()})
   end
 
   test "Generates nodes" do
-    node_b = Context.new_node(@transport)
-    node_a = Context.new_node(@transport)
+    node_b = Context.new_node()
+    node_a = Context.new_node()
     assert match?(%Node{}, node_a)
     assert match?(%Node{}, node_b)
 
@@ -23,8 +21,8 @@ defmodule MySensors.ContextTest do
   end
 
   test "Lists all nodes" do
-    Context.new_node(@transport)
-    Context.new_node(@transport)
+    Context.new_node()
+    Context.new_node()
     all_nodes = Context.all_nodes
     assert Enum.count(all_nodes) >= 2
   end
