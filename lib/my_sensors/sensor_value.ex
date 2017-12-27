@@ -11,7 +11,8 @@ defmodule MySensors.SensorValue do
   @optional_params []
   @required_params [:sensor_id, :type, :value]
 
-  @derive {Poison.Encoder, except: [:__meta__, :__struct, :sensor]}
+  @json_handler Application.get_env(:my_sensors, :json_handler)
+  @derive {Module.concat(@json_handler, "Encoder"), except: [:__meta__, :__struct, :sensor]}
 
   schema "sensor_values" do
     belongs_to :sensor, Sensor

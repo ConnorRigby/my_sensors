@@ -34,10 +34,8 @@ defmodule MySensors.Mixfile do
       {:sqlite_ecto2, "~> 2.2.1"},
       {:ex_doc, "~> 0.18.1", only: [:dev, :test]},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
-      {:cowboy, "~> 1.0.0"},
-      {:plug, "~> 1.0"},
-      {:poison, "~> 3.1.0"},
-      {:faker, "~> 0.9", only: [:dev, :test]},
+      {:faker, "~> 0.9"},
+      {:jason, "~> 1.0-rc"},
       {:excoveralls, "~> 0.7", only: :test}
     ]
   end

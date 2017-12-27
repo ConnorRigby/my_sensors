@@ -11,7 +11,9 @@ defmodule MySensors.Node do
   @optional_params [:battery_level, :protocol, :sketch_name, :sketch_version, :config]
   @required_params []
 
-  @derive {Poison.Encoder, except: [:__meta__, :__struct__, :sensors]}
+  @json_handler Application.get_env(:my_sensors, :json_handler)
+  @json_handler || Mix.raise("No JSON handler configured!")
+  @derive {Module.concat(@json_handler, "Encoder"), except: [:__meta__, :__struct__, :sensors]}
 
   schema "nodes" do
     has_many :sensors, Sensor, on_delete: :delete_all
