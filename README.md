@@ -1,3 +1,4 @@
+[![CircleCI](https://circleci.com/gh/ConnorRigby/my_sensors.svg?style=svg)](https://circleci.com/gh/ConnorRigby/my_sensors)
 # MySensors
 
 ## Usage
