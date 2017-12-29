@@ -241,7 +241,8 @@ defmodule MySensors.Gateway do
   end
 
   defp do_handle_packet(%Packet{command: @command_INTERNAL, type: @internal_GATEWAY_READY}, state) do
-    %{state | status: Map.put(state.status, :ready, true)}
+    # %{state | status: Map.put(state.status, :ready, true)}
+    state
   end
 
   defp do_handle_packet(%Packet{command: @command_INTERNAL} = packet, state) do
