@@ -7,10 +7,6 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
 
   setup do
     Gateway.add_transport(Local, [])
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(MySensors.Repo)
-    Ecto.Adapters.SQL.Sandbox.mode(MySensors.Repo, :auto)
-
-    # :ok = Ecto.Adapters.SQL.Sandbox.mode(MySensors.Repo, {:shared, self()})
     {:ok, []}
   end
 

@@ -7,7 +7,6 @@ defmodule MySensors.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-      supervisor(MySensors.Repo, []),
       worker(MySensors.Broadcast, []),
       worker(MySensors.Gateway, [])
     ]

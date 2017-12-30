@@ -4,10 +4,6 @@ defmodule MySensors.BroadcastTest do
 
   doctest Broadcast
 
-  setup do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(MySensors.Repo, ownership_timeout: :infinity)
-  end
-
   test "gets node object notifications on update" do
     Broadcast.subscribe(self())
     node = Context.new_node()

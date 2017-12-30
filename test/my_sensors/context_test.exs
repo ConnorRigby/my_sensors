@@ -7,11 +7,6 @@ defmodule MySensors.ContextTest do
 
   use ExUnit.Case, async: false
 
-  setup do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(MySensors.Repo)
-    :ok = Ecto.Adapters.SQL.Sandbox.mode(MySensors.Repo, {:shared, self()})
-  end
-
   test "Generates nodes" do
     node_b = Context.new_node()
     node_a = Context.new_node()
