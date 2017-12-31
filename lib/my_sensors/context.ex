@@ -184,7 +184,7 @@ defmodule MySensors.Context do
   def get_sensor(node_id, child_sensor_id) do
     case all_sensors(node_id) do
       sensors when is_list(sensors) ->
-        Enum.find(sensors || [], fn(%Sensor{child_sensor_id: sid}) ->
+        Enum.find(sensors, fn(%Sensor{child_sensor_id: sid}) ->
           child_sensor_id == sid
         end)
       nil -> nil
@@ -195,7 +195,7 @@ defmodule MySensors.Context do
   @spec all_sensors(integer) :: [Sensor.t] | nil
   def all_sensors(node_id) do
     case get_node(node_id) do
-      %Node{sensors: sensors} -> sensors || []
+      %Node{sensors: sensors} -> sensors
       nil -> nil
     end
   end
@@ -206,7 +206,7 @@ defmodule MySensors.Context do
     new_sensor = Map.merge(sensor, map)
     case get_node(sensor.node_id) do
       %Node{} = node ->
-        new_sensors = Enum.map(node.sensors || [], fn(%Sensor{} = s_sensor) ->
+        new_sensors = Enum.map(node.sensors, fn(%Sensor{} = s_sensor) ->
           if s_sensor.child_sensor_id == sensor.child_sensor_id do
             new_sensor
           else

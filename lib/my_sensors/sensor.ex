@@ -11,6 +11,14 @@ defmodule MySensors.Sensor do
     :sensor_values
   ]
 
+  @typedoc false
+  @type t :: %__MODULE__{
+    child_sensor_id: integer,
+    node_id: integer,
+    type: String.t,
+    sensor_values: [SensorValue.t]
+  }
+
   defstruct @keys
   defrecord __MODULE__, @keys
 

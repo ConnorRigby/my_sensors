@@ -49,6 +49,6 @@ defmodule MySensors.Node do
     sketch_name: String.t | nil,
     sketch_version: String.t | nil,
     config: String.t | nil,
-    sensors: [Sensor.t]
+    sensors: [Sensor.t] | nil
   }
 end

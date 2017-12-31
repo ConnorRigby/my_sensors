@@ -37,7 +37,7 @@ defmodule MySensors.Broadcast do
     {:ok, state}
   end
 
-  def terminate(reason, _state) do
+  def terminate(_reason, _state) do
     :mnesia.unsubscribe({:table, Node, :detailed})
   end
 
@@ -46,7 +46,7 @@ defmodule MySensors.Broadcast do
     {:reply, :ok, %{state | subscribers: [pid | state.subscribers]}}
   end
 
-  def handle_info({:mnesia_table_event, {:write, Node, {Node, id}, records, _}}, state) do
+  def handle_info({:mnesia_table_event, {:write, Node, {Node, _id}, records, _}}, state) do
     do_dispatch_events(:insert_or_update, records, state)
     {:noreply, state}
   end
@@ -56,7 +56,7 @@ defmodule MySensors.Broadcast do
     {:noreply, state}
   end
 
-  def handle_info({:mnesia_table_event, {:delete, Node, {Node, id}, records, _}}, state) do
+  def handle_info({:mnesia_table_event, {:delete, Node, {Node, _id}, records, _}}, state) do
     do_dispatch_events(:delete, records, state)
     {:noreply, state}
   end
