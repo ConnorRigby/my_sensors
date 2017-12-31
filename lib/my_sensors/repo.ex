@@ -1,6 +1,7 @@
 defmodule MySensors.Repo do
   @moduledoc "Repository for local MySensors Data."
-  alias MySensors.{Node, Sensor, SensorValue}
+  alias MySensors.Node
+  require Logger
   def start_link do
     GenServer.start_link(__MODULE__, [], [name: __MODULE__])
   end
@@ -8,9 +9,7 @@ defmodule MySensors.Repo do
   def init([]) do
     with :ok <- create_schema(),
     :ok <- :mnesia.start(),
-    :ok <- setup_table(Node),
-    :ok <- setup_table(Sensor),
-    :ok <- setup_table(SensorValue)
+    :ok <- setup_table(Node)
     do
       {:ok, %{}}
     else
@@ -28,11 +27,22 @@ defmodule MySensors.Repo do
   end
 
   defp setup_table(module) do
-    collums = struct(module) |> Map.keys()
-    case :mnesia.create_table(module, [attributes: collums]) do
-      {:atomic, :ok} -> :ok
-      {:aborted, {:already_exists, _}} -> :ok
-      {:aborted, reason} -> {:error, reason}
+    keys = module.keys()
+    tables = :mnesia.system_info(:tables)
+    if module not in tables do
+      :mnesia.create_table(module, [attributes: keys, type: :ordered_set])
+    else
+      {:atomic, :ok}
+    end
+    |> case do
+      {:atomic, :ok} ->
+        case :mnesia.table_info(module,:attributes) do
+          list when list != keys ->
+            Logger.error "struct changed size!"
+            exit(:wuhoh)
+          ^keys -> :ok
+        end
+      err -> err
     end
   end
 end

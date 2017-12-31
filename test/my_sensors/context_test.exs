@@ -86,7 +86,7 @@ defmodule MySensors.ContextTest do
       payload: "2.4.3",
       ack: false,
       command: @command_INTERNAL,
-      type: @internal_SKETCH_NAME
+      type: @internal_SKETCH_VERSION
     }
     {:ok, %Node{} = node} = Context.save_sketch_version(packet)
     assert node.sketch_version == "2.4.3"
@@ -130,7 +130,7 @@ defmodule MySensors.ContextTest do
     }
 
     {:ok, %SensorValue{} = sv} = Context.save_sensor_value(sensor_value_packet)
-    assert sv.sensor_id == sensor.id
+    assert sv.sensor_id == sensor.child_sensor_id
     assert sv.value == 1.0
   end
 

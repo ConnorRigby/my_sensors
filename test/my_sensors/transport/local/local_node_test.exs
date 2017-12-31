@@ -18,7 +18,6 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Sensor{}}}, 1000
     LocalNode.stop(local_node)
     refute Context.get_node(id)
     Local.stop()
@@ -33,7 +32,6 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Sensor{}}}, 1000
     LocalNode.stop(local_node)
     refute Context.get_node(id)
     Local.stop()
@@ -45,11 +43,8 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Sensor{}}}, 1000
 
     :ok = LocalNode.add_sensor(local_node, @sensor_DOOR)
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Sensor{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Sensor{type: "sensor_door"}}}, 1000
   end
 
   test "deleting a node stops a localnode" do
@@ -60,7 +55,6 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Sensor{}}}, 1000
 
     got = Context.get_node(node.id)
     assert got

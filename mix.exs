@@ -35,7 +35,6 @@ defmodule MySensors.Mixfile do
       {:ex_doc, "~> 0.18.1", only: [:dev, :test]},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:faker, "~> 0.9"},
-      {:jason, "~> 1.0-rc"},
       {:excoveralls, "~> 0.7", only: :test}
     ]
   end

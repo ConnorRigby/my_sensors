@@ -1,17 +1,26 @@
 defmodule MySensors.Sensor do
   @moduledoc "Sensor Object"
 
-  alias MySensors.{Node, Sensor, SensorValue}
+  alias MySensors.SensorValue
+  import Record
 
-  @typedoc @moduledoc
-  @type t :: %__MODULE__{
-    node_id: number,
-    child_sensor_id: number,
-    type: String.t
-  }
+  @keys [
+    :child_sensor_id,
+    :node_id,
+    :type,
+    :sensor_values
+  ]
 
-  defstruct [:node_id, :child_sensor_id, :type, :id]
+  defstruct @keys
+  defrecord __MODULE__, @keys
 
-  @json_handler Application.get_env(:my_sensors, :json_handler)
-  @derive {Module.concat(@json_handler, "Encoder"), except: [:__meta__, :__struct, :node]}
+  def to_struct({__MODULE__, child_sensor_id, node_id, type, sensor_values}) do
+    struct(__MODULE__, [child_sensor_id: child_sensor_id, node_id: node_id, type: type, sensor_values: Enum.map(sensor_values, &SensorValue.to_struct(&1))])
+  end
+
+  def from_struct(%__MODULE__{child_sensor_id: child_sensor_id, node_id: node_id, type: type, sensor_values: sensor_values}) do
+    {__MODULE__, child_sensor_id, node_id, type, Enum.map(sensor_values, &SensorValue.from_struct(&1))}
+  end
+
+  def keys, do: @keys
 end

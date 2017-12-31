@@ -10,6 +10,7 @@ defmodule MySensors.Broadcast do
   """
 
   use GenServer
+  alias MySensors.Node
 
   @doc false
   def start_link do
@@ -23,22 +24,6 @@ defmodule MySensors.Broadcast do
     GenServer.call(__MODULE__, {:subscribe, pid})
   end
 
-  # This gets called from the Context module.
-  @doc false
-  def notify(%{insert_or_update: resource}) do
-    GenServer.cast(__MODULE__, {:insert_or_update, resource})
-    {:ok, resource}
-  end
-
-  def notify(%{delete: resource}) do
-    GenServer.cast(__MODULE__, {:delete, resource})
-    {:ok, resource}
-  end
-
-  def notify(unknown) do
-    {:error, {:unknown_arg, unknown}}
-  end
-
   defmodule State do
     @moduledoc false
     defstruct [subscribers: []]
@@ -47,21 +32,32 @@ defmodule MySensors.Broadcast do
   end
 
   def init([]) do
+    :mnesia.subscribe({:table, Node, :detailed})
     state = struct(State)
     {:ok, state}
   end
 
-  def handle_cast({action, resource}, state) do
-    for pid <- state.subscribers do
-      send pid, {:my_sensors, {action, resource}}
-    end
-
-    {:noreply, state}
+  def terminate(reason, _state) do
+    :mnesia.unsubscribe({:table, Node, :detailed})
   end
 
   def handle_call({:subscribe, pid}, _from, state) do
     Process.monitor(pid)
     {:reply, :ok, %{state | subscribers: [pid | state.subscribers]}}
+  end
+
+  def handle_info({:mnesia_table_event, {:write, Node, record, _, _}}, state) do
+    for pid <- state.subscribers do
+      send pid, {:my_sensors, {:insert_or_update, Node.to_struct(record)}}
+    end
+    {:noreply, state}
+  end
+
+  def handle_info({:mnesia_table_event, {:delete, Node, record, _, _}}, state) do
+    for pid <- state.subscribers do
+      send pid, {:my_sensors, {:delete, Node.to_struct(record)}}
+    end
+    {:noreply, state}
   end
 
   def handle_info({:DOWN, _, :process, pid, _reason}, state) do

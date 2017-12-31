@@ -1,17 +1,31 @@
 defmodule MySensors.SensorValue do
   @moduledoc "SensorValue Object"
 
-  alias MySensors.{Sensor, SensorValue}
+  import Record
 
-  @typedoc @moduledoc
+  @keys [
+    :sensor_id,
+    :type,
+    :value
+  ]
+
+  defstruct @keys
+  defrecord __MODULE__, @keys
+
+  @typedoc false
   @type t :: %__MODULE__{
-    sensor_id: number,
+    sensor_id: integer,
     type: String.t,
-    value: Float.t
+    value: any
   }
 
-  defstruct [:sensor_id, :type, :value, :id]
+  def to_struct({__MODULE__, sensor_id, type, value}) do
+    struct(__MODULE__, [sensor_id: sensor_id, type: type, value: value])
+  end
 
-  @json_handler Application.get_env(:my_sensors, :json_handler)
-  @derive {Module.concat(@json_handler, "Encoder"), except: [:__meta__, :__struct, :sensor]}
+  def from_struct(%__MODULE__{sensor_id: sensor_id, type: type, value: value}) do
+    {__MODULE__, sensor_id, type, value}
+  end
+
+  def keys, do: @keys
 end
