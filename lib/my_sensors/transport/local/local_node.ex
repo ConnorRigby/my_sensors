@@ -126,7 +126,7 @@ defmodule MySensors.Transport.Local.LocalNode do
     } |> Local.dispatch()
 
     # Present sensors.
-    for sensor <- state.node.sensors do
+    for sensor <- state.node.sensors || [] do
       # Don't broadcast the sensor type and protocol again.
       unless sensor.child_sensor_id == @internal_NODE_SENSOR_ID do
         %Packet{

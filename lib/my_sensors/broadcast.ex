@@ -46,22 +46,36 @@ defmodule MySensors.Broadcast do
     {:reply, :ok, %{state | subscribers: [pid | state.subscribers]}}
   end
 
+  def handle_info({:mnesia_table_event, {:write, Node, {Node, id}, records, _}}, state) do
+    do_dispatch_events(:insert_or_update, records, state)
+    {:noreply, state}
+  end
+
   def handle_info({:mnesia_table_event, {:write, Node, record, _, _}}, state) do
-    for pid <- state.subscribers do
-      send pid, {:my_sensors, {:insert_or_update, Node.to_struct(record)}}
-    end
+    do_dispatch_events(:insert_or_update, [record], state)
+    {:noreply, state}
+  end
+
+  def handle_info({:mnesia_table_event, {:delete, Node, {Node, id}, records, _}}, state) do
+    do_dispatch_events(:delete, records, state)
     {:noreply, state}
   end
 
   def handle_info({:mnesia_table_event, {:delete, Node, record, _, _}}, state) do
-    for pid <- state.subscribers do
-      send pid, {:my_sensors, {:delete, Node.to_struct(record)}}
-    end
+    do_dispatch_events(:delete, [record], state)
     {:noreply, state}
   end
 
   def handle_info({:DOWN, _, :process, pid, _reason}, state) do
     new_subscribers = List.delete(state.subscribers, pid)
     {:noreply, %{state | subscribers: new_subscribers}}
+  end
+
+  def do_dispatch_events(action, events, state) do
+    for record <- events do
+      for pid <- state.subscribers do
+        send pid, {:my_sensors, {action, Node.to_struct(record)}}
+      end
+    end
   end
 end
