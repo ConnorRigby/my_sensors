@@ -11,6 +11,7 @@ defmodule MySensors.Mixfile do
       package: package(),
       description: description(),
       test_coverage: [tool: ExCoveralls],
+      dialyzer: [plt_add_apps: [:mnesia], plt_add_deps: :apps_direct],
       preferred_cli_env: ["test": :test,
                           "coveralls": :test,
                           "coveralls.detail": :test,

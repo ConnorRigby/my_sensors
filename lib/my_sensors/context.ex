@@ -152,7 +152,7 @@ defmodule MySensors.Context do
           %Node{} = node ->
             sensor = struct(Sensor, [child_sensor_id: sid, node_id: node_id, type: to_string(type), sensor_values: []])
             new_sensors = node.sensors ++ [sensor]
-            case update_node(node, sensors: new_sensors) do
+            case update_node(node, %{sensors: new_sensors}) do
               {:ok, %Node{}} -> {:ok, sensor}
               err -> err
             end
