@@ -38,6 +38,6 @@ jobs:
             - ~/.mix
       - run: mix dialyzer --halt-exit-status
       - run:
-        command: mix coveralls.circle
-        environment:
-          MIX_ENV: test
+          command: mix coveralls.circle
+          environment:
+            MIX_ENV: test
