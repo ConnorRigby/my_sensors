@@ -50,7 +50,6 @@ defmodule MySensors.Transport.Local do
   end
 
   def handle_call({:write, packet}, _, state) do
-    IO.puts "writing packet: #{inspect packet}"
     for pid <- state.registered do
       send pid, packet
     end

@@ -86,7 +86,6 @@ defmodule MySensors.Gateway do
   end
 
   def handle_cast({:handle_packet, packet}, state) do
-    Logger.info "packet in: #{inspect packet}"
     case do_handle_packet(packet, state) do
       %State{} = state ->
         {:noreply, state}
@@ -97,8 +96,6 @@ defmodule MySensors.Gateway do
   end
 
   def handle_cast({:write_packet, packet}, state) do
-    Logger.info "packet out: #{inspect packet}"
-
     for %{module: tp, pid: pid} <- state.transports do
       tp.write_packet(pid, packet)
     end

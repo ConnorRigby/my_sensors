@@ -9,9 +9,10 @@ defmodule MySensors.Repo do
   def init([]) do
     with :ok <- create_schema(),
     :ok <- :mnesia.start(),
-    :ok <- setup_table(Node)
+    :ok <- setup_table(Node),
+    :ok <- :mnesia.wait_for_tables([Node], 1500)
     do
-      {:ok, %{}}
+      {:ok, :no_state, :hibernate}
     else
       {:error, reason} -> {:stop, {:error, reason}}
       err -> {:stop, {:error, err}}

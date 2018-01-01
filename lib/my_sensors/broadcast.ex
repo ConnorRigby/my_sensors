@@ -6,11 +6,12 @@ defmodule MySensors.Broadcast do
   where `type` will be:
     * `insert_or_update`
     * `delete`
-  and `data` will be any `Node`, `Sensor`, or `SensorValue` struct.
+  and `data` will be a `Node` struct.
   """
 
   use GenServer
   alias MySensors.Node
+  require Logger
 
   @doc false
   def start_link do
@@ -32,23 +33,19 @@ defmodule MySensors.Broadcast do
   end
 
   def init([]) do
-    :mnesia.subscribe({:table, Node, :detailed})
+    {:ok, _} = :mnesia.subscribe({:table, Node, :detailed})
     state = struct(State)
     {:ok, state}
   end
 
-  def terminate(_reason, _state) do
+  def terminate(reason, _state) do
+    Logger.error "Broadcast module terminated: #{inspect reason}"
     :mnesia.unsubscribe({:table, Node, :detailed})
   end
 
   def handle_call({:subscribe, pid}, _from, state) do
     Process.monitor(pid)
     {:reply, :ok, %{state | subscribers: [pid | state.subscribers]}}
-  end
-
-  def handle_info({:mnesia_table_event, {:write, Node, {Node, _id}, records, _}}, state) do
-    do_dispatch_events(:insert_or_update, records, state)
-    {:noreply, state}
   end
 
   def handle_info({:mnesia_table_event, {:write, Node, record, _, _}}, state) do
@@ -58,11 +55,6 @@ defmodule MySensors.Broadcast do
 
   def handle_info({:mnesia_table_event, {:delete, Node, {Node, _id}, records, _}}, state) do
     do_dispatch_events(:delete, records, state)
-    {:noreply, state}
-  end
-
-  def handle_info({:mnesia_table_event, {:delete, Node, record, _, _}}, state) do
-    do_dispatch_events(:delete, [record], state)
     {:noreply, state}
   end
 

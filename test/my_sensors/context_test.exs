@@ -175,4 +175,19 @@ defmodule MySensors.ContextTest do
     assert Context.get_sensor(node.id, 20).node_id == node.id
     assert Context.get_sensor(node.id, 20).type == "sensor_hum"
   end
+
+  test "saving a sensor twice doesnt cause duplicates" do
+    node = Context.new_node()
+    packet = %Packet{
+      node_id: node.id,
+      child_sensor_id: 5,
+      ack: false,
+      command: @command_PRESENTATION,
+      type: @sensor_BINARY,
+      payload: ""
+    }
+    {:ok, %Sensor{}} = Context.save_sensor(packet)
+    {:ok, %Sensor{}} = Context.save_sensor(packet)
+    assert Context.get_node(node.id).sensors |> Enum.count == 1
+  end
 end

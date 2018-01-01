@@ -15,9 +15,9 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
     id = :sys.get_state(local_node).node.id
     assert id
     Broadcast.subscribe(self())
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
+    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
+    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
+    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
     LocalNode.stop(local_node)
     refute Context.get_node(id)
     Local.stop()
@@ -29,9 +29,9 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
     id = :sys.get_state(local_node).node.id
     assert id
     Broadcast.subscribe(self())
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
+    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
+    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
+    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
     LocalNode.stop(local_node)
     refute Context.get_node(id)
     Local.stop()
@@ -40,9 +40,9 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
   test "adds a fake sensor to a fake node" do
     {:ok, local_node} = LocalNode.start_link(nil, [])
     Broadcast.subscribe(self())
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
+    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
+    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
+    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
 
     :ok = LocalNode.add_sensor(local_node, @sensor_DOOR)
   end
@@ -52,14 +52,14 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
     node = Context.new_node()
     {:ok, local_node} = LocalNode.start_link(node, [])
     Broadcast.subscribe(self())
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
-    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 1000
+    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
+    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
+    assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
 
     got = Context.get_node(node.id)
     assert got
     Context.delete_node(node.id)
-    assert_receive {:EXIT, ^local_node, :deleted}, 1000
+    assert_receive {:EXIT, ^local_node, :deleted}, 2000
   end
 
 end
