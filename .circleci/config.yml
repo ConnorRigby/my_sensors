@@ -1,14 +1,40 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/my_sensors
     docker:
-      - image: elixir:1.5.2
-        environment:
-          MIX_ENV: test
+      # Bump cache key version below when changing elixir version
+      - image: circleci/elixir:1.5.2
+    # resource_class: medium+
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v3-dependency-cache-{{ checksum "mix.lock" }}
+            - v3-dependency-cache
       - run: mix local.hex --force
-      - run: mix local.rebar
+      - run: mix local.rebar --force
       - run: mix deps.get
-      - run: mix coveralls.circle
+      - run: mix deps.compile
+      - run: mix compile
+      - run:
+          command: mix compile
+          environment:
+            MIX_ENV: test
+      - save_cache:
+          key: v3-dependency-cache-{{ checksum "mix.lock" }}
+          paths:
+            - _build
+            - deps
+            - ~/.mix
+      - restore_cache:
+          keys:
+            - v3-plt-cache-{{ checksum "mix.lock" }}
+            - v3-plt-cache
+      - run: mix dialyzer --plt
+      - save_cache:
+          key: v3-plt-cache-{{ checksum "mix.lock" }}
+          paths:
+            - _build
+            - ~/.mix
+      - run: mix dialyzer --halt-exit-status
+      - run: mix test
