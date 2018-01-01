@@ -7,43 +7,29 @@
 
 The [package](https://hex.pm/packages/my_sensors) can be installed by adding `my_sensors` to your list of dependencies in `mix.exs`:
 
-
 ```elixir
 def deps do
   [
-    {:my_sensors, "~> 0.1.0-rc"}
+    {:my_sensors, "~> 0.1.0-rc2"}
   ]
 end
 ```
 
-then in `config.exs`:
+Then add a transport to the Gateway. By default you have two options:
+## UART
+To use the UART transport, first wire up and flash your arduino according to the
+[MySensors Serial Gateway Instructions](https://www.mysensors.org/build/serial_gateway).
+then you can start the gateway with:
 ```elixir
-config :my_sensors, MySensors.Repo,
-  adapter: Sqlite.Ecto2, # or postgres if you want.
-  database: "/path/to/my_sensors_db.sqlite3",
-  # Don't change this one.
-  priv: "priv/repo"
-
-config :my_sensors, ecto_repos: [MySensors.Repo]
-
-config :my_sensors, json_handler: Jason # Or Poison if you want.
+MySensors.add_gateway(MySensors.Transport.UART, [device: "/dev/devicePath"])
 ```
 
-Before starting the app you will need to do:
-
-```bash
-mix ecto.migrate -r MySensors.Repo
-```
-
-or
-
+## TCP
+to use the TCP transport, first wire up and flash your arduino according to the
+[MySensors Ethernet Gateway Instructions](https://www.mysensors.org/build/ethernet_gateway).
+(Or you can use the [MySensors WiFi Gateway](https://www.mysensors.org/build/esp8266_gateway).)
+then you can start the gateway with:
 ```elixir
-Mix.Tasks.Ecto.Migrate.run ["-r", "MySensors.Repo"]
+MySensors.add_gateway(MySensors.Transpoart.TCP, [host: {192, 168, 1, 40}, port: 5001])
 ```
-
-or add
-```elixir
-worker(Task, [MySensors.Repo.Migrator, :run, []], [restart: :transient]),
-```
-
-to your Application startup.
+Make sure you use the correct host. You can use local hostnames also, if resolvable.
