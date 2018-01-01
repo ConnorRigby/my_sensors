@@ -37,4 +37,4 @@ jobs:
             - _build
             - ~/.mix
       - run: mix dialyzer --halt-exit-status
-      - run: mix test
+      - run: mix coveralls.circle
