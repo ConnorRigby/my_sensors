@@ -21,7 +21,7 @@ To use the UART transport, first wire up and flash your arduino according to the
 [MySensors Serial Gateway Instructions](https://www.mysensors.org/build/serial_gateway).
 then you can start the gateway with:
 ```elixir
-MySensors.add_gateway(MySensors.Transport.UART, [device: "/dev/devicePath"])
+MySensors.Gateway.add_transport(MySensors.Transport.UART, [device: "/dev/devicePath"])
 ```
 
 ## TCP
@@ -30,6 +30,6 @@ to use the TCP transport, first wire up and flash your arduino according to the
 (Or you can use the [MySensors WiFi Gateway](https://www.mysensors.org/build/esp8266_gateway).)
 then you can start the gateway with:
 ```elixir
-MySensors.add_gateway(MySensors.Transpoart.TCP, [host: {192, 168, 1, 40}, port: 5001])
+MySensors.Gateway.add_transport(MySensors.Transport.TCP, [host: {192, 168, 1, 40}, port: 5001])
 ```
 Make sure you use the correct host. You can use local hostnames also, if resolvable.
