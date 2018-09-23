@@ -33,9 +33,10 @@ defmodule MySensors.Broadcast do
   end
 
   def init([]) do
-    {:ok, _} = :mnesia.subscribe({:table, Node, :detailed})
-    state = struct(State)
-    {:ok, state}
+    # {:ok, _} = :mnesia.subscribe({:table, Node, :detailed})
+    # state = struct(State)
+    # {:ok, state}
+    :ignore
   end
 
   def terminate(reason, _state) do

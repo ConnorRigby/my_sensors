@@ -34,6 +34,7 @@ defmodule MySensors.Mixfile do
   defp deps do
     [
       {:nerves_uart, "~> 1.2"},
+      {:esqlite, "~> 0.2.4"},
       {:ex_doc, "~> 0.19", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.3", only: [:dev], runtime: false},
       {:faker, "~> 0.10"},
