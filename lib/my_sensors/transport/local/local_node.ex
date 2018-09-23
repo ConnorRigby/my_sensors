@@ -7,7 +7,7 @@ defmodule MySensors.Transport.Local.LocalNode do
   alias MySensors.Transport.Local
   require Logger
 
-  @app_version Mix.Project.config[:version]
+  @app_version Mix.Project.config()[:version]
 
   @doc """
   Start a fake node.
@@ -32,6 +32,7 @@ defmodule MySensors.Transport.Local.LocalNode do
   def init([node, opts]) do
     Local.register(self())
     Broadcast.subscribe(self())
+
     if node do
       # We already have an id and whatnot.
       # Nothing to do, but broadcast.
@@ -41,16 +42,20 @@ defmodule MySensors.Transport.Local.LocalNode do
         command: @command_INTERNAL,
         type: @internal_ID_RESPONSE,
         ack: false,
-        payload: node.id}
-      send self(), packet
+        payload: node.id
+      }
+
+      send(self(), packet)
     else
       # No id, do we will need to get one.
-      id_request = %Packet{
+      %Packet{
         node_id: @internal_NODE_SENSOR_ID,
         command: @command_INTERNAL,
         type: @internal_ID_REQUEST
-      } |> Local.dispatch()
+      }
+      |> Local.dispatch()
     end
+
     finish_init([node, opts])
   end
 
@@ -58,9 +63,11 @@ defmodule MySensors.Transport.Local.LocalNode do
     receive do
       %Packet{type: @internal_ID_RESPONSE, payload: id} ->
         %Node{} = node = node || Context.get_node(id)
-        send self(), :sketch_name_and_version
+        send(self(), :sketch_name_and_version)
         {:ok, %{node: node, opts: opts}}
-      _ -> finish_init([node, opts])
+
+      _ ->
+        finish_init([node, opts])
     after
       5_000 ->
         {:stop, :failed_to_get_id}
@@ -69,8 +76,9 @@ defmodule MySensors.Transport.Local.LocalNode do
 
   def terminate(reason, state) do
     if reason not in [:shutdown, :normal] do
-      Logger.warn "Local node stopping: #{inspect reason}"
+      Logger.warn("Local node stopping: #{inspect(reason)}")
     end
+
     if Keyword.get(state.opts, :delete_on_exit) && state.node do
       Context.delete_node(state.node.id)
     end
@@ -79,17 +87,18 @@ defmodule MySensors.Transport.Local.LocalNode do
   def handle_call({:add_sensor, type}, _, state) do
     node = state.node
     next_sensor_id = Enum.count(node.sensors) + 1
+
     sensor = %Sensor{
       type: type,
       child_sensor_id: next_sensor_id
     }
+
     new_node = %{node | sensors: node.sensors ++ [sensor]}
-    send self(), :present_sensors
+    send(self(), :present_sensors)
     {:reply, :ok, %{state | node: new_node}}
   end
 
   def handle_info(:sketch_name_and_version, state) do
-
     # Broadcast sketch name.
     %Packet{
       command: @command_INTERNAL,
@@ -97,8 +106,9 @@ defmodule MySensors.Transport.Local.LocalNode do
       type: @internal_SKETCH_NAME,
       node_id: state.node.id,
       ack: false,
-      payload: Keyword.get(state.opts, :sketch_name, Faker.Pokemon.name)
-    } |> Local.dispatch()
+      payload: Keyword.get(state.opts, :sketch_name, Faker.Pokemon.name())
+    }
+    |> Local.dispatch()
 
     # Broadcast sketch version.
     %Packet{
@@ -108,9 +118,10 @@ defmodule MySensors.Transport.Local.LocalNode do
       node_id: state.node.id,
       ack: false,
       payload: Keyword.get(state.opts, :sketch_version, @app_version)
-    } |> Local.dispatch()
+    }
+    |> Local.dispatch()
 
-    send self(), :present_sensors
+    send(self(), :present_sensors)
     {:noreply, state}
   end
 
@@ -123,7 +134,8 @@ defmodule MySensors.Transport.Local.LocalNode do
       ack: false,
       type: @sensor_ARDUINO_REPEATER_NODE,
       payload: to_string(__MODULE__)
-    } |> Local.dispatch()
+    }
+    |> Local.dispatch()
 
     # Present sensors.
     for sensor <- state.node.sensors || [] do
@@ -136,9 +148,11 @@ defmodule MySensors.Transport.Local.LocalNode do
           ack: false,
           type: sensor.type,
           payload: ""
-        } |> Local.dispatch()
+        }
+        |> Local.dispatch()
       end
     end
+
     {:noreply, state}
   end
 
@@ -164,12 +178,12 @@ defmodule MySensors.Transport.Local.LocalNode do
 
   # Ignore packets to different nodes.
   def handle_info(%Packet{node_id: packet_node_id}, %{node: %{id: this_node_id}} = state)
-    when packet_node_id != this_node_id
-  do
+      when packet_node_id != this_node_id do
     {:noreply, state}
   end
 
-  def handle_info(%Packet{command: command} = packet, state) when command in [@command_SET, @command_REQ] do
+  def handle_info(%Packet{command: command} = packet, state)
+      when command in [@command_SET, @command_REQ] do
     %Packet{
       node_id: state.node.id,
       child_sensor_id: packet.child_sensor_id,
@@ -177,13 +191,14 @@ defmodule MySensors.Transport.Local.LocalNode do
       type: packet.type,
       ack: false,
       payload: packet.payload
-    } |> Local.dispatch
+    }
+    |> Local.dispatch()
+
     {:noreply, state}
   end
 
   def handle_info(%Packet{} = packet, state) do
-    Logger.info "Unhandled packet: #{inspect packet} on node: #{inspect state.node}"
+    Logger.info("Unhandled packet: #{inspect(packet)} on node: #{inspect(state.node)}")
     {:noreply, state}
   end
-
 end

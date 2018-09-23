@@ -42,16 +42,16 @@ defmodule MySensors.Packet do
   @doc "Parse a packet `type` based on a `command`."
   @compile {:inline, type: 2}
   ## PRESENTATION
-  def type(@command_PRESENTATION, 0),  do: {:ok, @sensor_DOOR}
-  def type(@command_PRESENTATION, 1),  do: {:ok, @sensor_MOTION}
-  def type(@command_PRESENTATION, 2),  do: {:ok, @sensor_SMOKE}
-  def type(@command_PRESENTATION, 3),  do: {:ok, @sensor_BINARY}
-  def type(@command_PRESENTATION, 4),  do: {:ok, @sensor_DIMMER}
-  def type(@command_PRESENTATION, 5),  do: {:ok, @sensor_COVER}
-  def type(@command_PRESENTATION, 6),  do: {:ok, @sensor_TEMP}
-  def type(@command_PRESENTATION, 7),  do: {:ok, @sensor_HUM}
-  def type(@command_PRESENTATION, 8),  do: {:ok, @sensor_BARO}
-  def type(@command_PRESENTATION, 9),  do: {:ok, @sensor_WIND}
+  def type(@command_PRESENTATION, 0), do: {:ok, @sensor_DOOR}
+  def type(@command_PRESENTATION, 1), do: {:ok, @sensor_MOTION}
+  def type(@command_PRESENTATION, 2), do: {:ok, @sensor_SMOKE}
+  def type(@command_PRESENTATION, 3), do: {:ok, @sensor_BINARY}
+  def type(@command_PRESENTATION, 4), do: {:ok, @sensor_DIMMER}
+  def type(@command_PRESENTATION, 5), do: {:ok, @sensor_COVER}
+  def type(@command_PRESENTATION, 6), do: {:ok, @sensor_TEMP}
+  def type(@command_PRESENTATION, 7), do: {:ok, @sensor_HUM}
+  def type(@command_PRESENTATION, 8), do: {:ok, @sensor_BARO}
+  def type(@command_PRESENTATION, 9), do: {:ok, @sensor_WIND}
   def type(@command_PRESENTATION, 10), do: {:ok, @sensor_RAIN}
   def type(@command_PRESENTATION, 11), do: {:ok, @sensor_UV}
   def type(@command_PRESENTATION, 12), do: {:ok, @sensor_WEIGHT}
@@ -126,16 +126,16 @@ defmodule MySensors.Packet do
   def type(@command_PRESENTATION, _), do: {:error, @sensor_UNKNOWN}
 
   ## SET | REQ
-  def type(t, 0)  when t in [@command_SET, @command_REQ], do: {:ok, @value_TEMP}
-  def type(t, 1)  when t in [@command_SET, @command_REQ], do: {:ok, @value_HUM}
-  def type(t, 2)  when t in [@command_SET, @command_REQ], do: {:ok, @value_STATUS}
-  def type(t, 3)  when t in [@command_SET, @command_REQ], do: {:ok, @value_PERCENTAGE}
-  def type(t, 4)  when t in [@command_SET, @command_REQ], do: {:ok, @value_PRESSURE}
-  def type(t, 5)  when t in [@command_SET, @command_REQ], do: {:ok, @value_FORECAST}
-  def type(t, 6)  when t in [@command_SET, @command_REQ], do: {:ok, @value_RAIN}
-  def type(t, 7)  when t in [@command_SET, @command_REQ], do: {:ok, @value_RAINRATE}
-  def type(t, 8)  when t in [@command_SET, @command_REQ], do: {:ok, @value_WIND}
-  def type(t, 9)  when t in [@command_SET, @command_REQ], do: {:ok, @value_GUST}
+  def type(t, 0) when t in [@command_SET, @command_REQ], do: {:ok, @value_TEMP}
+  def type(t, 1) when t in [@command_SET, @command_REQ], do: {:ok, @value_HUM}
+  def type(t, 2) when t in [@command_SET, @command_REQ], do: {:ok, @value_STATUS}
+  def type(t, 3) when t in [@command_SET, @command_REQ], do: {:ok, @value_PERCENTAGE}
+  def type(t, 4) when t in [@command_SET, @command_REQ], do: {:ok, @value_PRESSURE}
+  def type(t, 5) when t in [@command_SET, @command_REQ], do: {:ok, @value_FORECAST}
+  def type(t, 6) when t in [@command_SET, @command_REQ], do: {:ok, @value_RAIN}
+  def type(t, 7) when t in [@command_SET, @command_REQ], do: {:ok, @value_RAINRATE}
+  def type(t, 8) when t in [@command_SET, @command_REQ], do: {:ok, @value_WIND}
+  def type(t, 9) when t in [@command_SET, @command_REQ], do: {:ok, @value_GUST}
   def type(t, 10) when t in [@command_SET, @command_REQ], do: {:ok, @value_DIRECTION}
   def type(t, 11) when t in [@command_SET, @command_REQ], do: {:ok, @value_UV}
   def type(t, 12) when t in [@command_SET, @command_REQ], do: {:ok, @value_WEIGHT}
@@ -184,16 +184,16 @@ defmodule MySensors.Packet do
   def type(t, 55) when t in [@command_SET, @command_REQ], do: {:ok, @value_VA}
   def type(t, 56) when t in [@command_SET, @command_REQ], do: {:ok, @value_POWER_FACTOR}
 
-  def type(t, @value_TEMP)  when t in [@command_SET, @command_REQ], do: {:ok, 0}
-  def type(t, @value_HUM)  when t in [@command_SET, @command_REQ], do: {:ok, 1}
-  def type(t, @value_STATUS)  when t in [@command_SET, @command_REQ], do: {:ok, 2}
-  def type(t, @value_PERCENTAGE)  when t in [@command_SET, @command_REQ], do: {:ok, 3}
-  def type(t, @value_PRESSURE)  when t in [@command_SET, @command_REQ], do: {:ok, 4}
-  def type(t, @value_FORECAST)  when t in [@command_SET, @command_REQ], do: {:ok, 5}
-  def type(t, @value_RAIN)  when t in [@command_SET, @command_REQ], do: {:ok, 6}
-  def type(t, @value_RAINRATE)  when t in [@command_SET, @command_REQ], do: {:ok, 7}
-  def type(t, @value_WIND)  when t in [@command_SET, @command_REQ], do: {:ok, 8}
-  def type(t, @value_GUST)  when t in [@command_SET, @command_REQ], do: {:ok, 9}
+  def type(t, @value_TEMP) when t in [@command_SET, @command_REQ], do: {:ok, 0}
+  def type(t, @value_HUM) when t in [@command_SET, @command_REQ], do: {:ok, 1}
+  def type(t, @value_STATUS) when t in [@command_SET, @command_REQ], do: {:ok, 2}
+  def type(t, @value_PERCENTAGE) when t in [@command_SET, @command_REQ], do: {:ok, 3}
+  def type(t, @value_PRESSURE) when t in [@command_SET, @command_REQ], do: {:ok, 4}
+  def type(t, @value_FORECAST) when t in [@command_SET, @command_REQ], do: {:ok, 5}
+  def type(t, @value_RAIN) when t in [@command_SET, @command_REQ], do: {:ok, 6}
+  def type(t, @value_RAINRATE) when t in [@command_SET, @command_REQ], do: {:ok, 7}
+  def type(t, @value_WIND) when t in [@command_SET, @command_REQ], do: {:ok, 8}
+  def type(t, @value_GUST) when t in [@command_SET, @command_REQ], do: {:ok, 9}
   def type(t, @value_DIRECTION) when t in [@command_SET, @command_REQ], do: {:ok, 10}
   def type(t, @value_UV) when t in [@command_SET, @command_REQ], do: {:ok, 11}
   def type(t, @value_WEIGHT) when t in [@command_SET, @command_REQ], do: {:ok, 12}
@@ -244,16 +244,16 @@ defmodule MySensors.Packet do
   def type(t, _) when t in [@command_SET, @command_REQ], do: {:error, @value_UNKNOWN}
 
   ## INTERNAL
-  def type(@command_INTERNAL, 0),  do: {:ok, @internal_BATTERY_LEVEL}
-  def type(@command_INTERNAL, 1),  do: {:ok, @internal_TIME}
-  def type(@command_INTERNAL, 2),  do: {:ok, @internal_VERSION}
-  def type(@command_INTERNAL, 3),  do: {:ok, @internal_ID_REQUEST}
-  def type(@command_INTERNAL, 4),  do: {:ok, @internal_ID_RESPONSE}
-  def type(@command_INTERNAL, 5),  do: {:ok, @internal_INCLUSION_MODE}
-  def type(@command_INTERNAL, 6),  do: {:ok, @internal_CONFIG}
-  def type(@command_INTERNAL, 7),  do: {:ok, @internal_FIND_PARENT}
-  def type(@command_INTERNAL, 8),  do: {:ok, @internal_FIND_PARENT_RESPONSE}
-  def type(@command_INTERNAL, 9),  do: {:ok, @internal_LOG_MESSAGE}
+  def type(@command_INTERNAL, 0), do: {:ok, @internal_BATTERY_LEVEL}
+  def type(@command_INTERNAL, 1), do: {:ok, @internal_TIME}
+  def type(@command_INTERNAL, 2), do: {:ok, @internal_VERSION}
+  def type(@command_INTERNAL, 3), do: {:ok, @internal_ID_REQUEST}
+  def type(@command_INTERNAL, 4), do: {:ok, @internal_ID_RESPONSE}
+  def type(@command_INTERNAL, 5), do: {:ok, @internal_INCLUSION_MODE}
+  def type(@command_INTERNAL, 6), do: {:ok, @internal_CONFIG}
+  def type(@command_INTERNAL, 7), do: {:ok, @internal_FIND_PARENT}
+  def type(@command_INTERNAL, 8), do: {:ok, @internal_FIND_PARENT_RESPONSE}
+  def type(@command_INTERNAL, 9), do: {:ok, @internal_LOG_MESSAGE}
   def type(@command_INTERNAL, 10), do: {:ok, @internal_CHILDREN}
   def type(@command_INTERNAL, 11), do: {:ok, @internal_SKETCH_NAME}
   def type(@command_INTERNAL, 12), do: {:ok, @internal_SKETCH_VERSION}
@@ -274,16 +274,16 @@ defmodule MySensors.Packet do
   def type(@command_INTERNAL, 27), do: {:ok, @internal_REGISTRATION_RESPONSE}
   def type(@command_INTERNAL, 28), do: {:ok, @internal_DEBUG}
 
-  def type(@command_INTERNAL, @internal_BATTERY_LEVEL),  do: {:ok, 0}
-  def type(@command_INTERNAL, @internal_TIME),  do: {:ok, 1}
-  def type(@command_INTERNAL, @internal_VERSION),  do: {:ok, 2}
-  def type(@command_INTERNAL, @internal_ID_REQUEST),  do: {:ok, 3}
-  def type(@command_INTERNAL, @internal_ID_RESPONSE),  do: {:ok, 4}
-  def type(@command_INTERNAL, @internal_INCLUSION_MODE),  do: {:ok, 5}
-  def type(@command_INTERNAL, @internal_CONFIG),  do: {:ok, 6}
-  def type(@command_INTERNAL, @internal_FIND_PARENT),  do: {:ok, 7}
-  def type(@command_INTERNAL, @internal_FIND_PARENT_RESPONSE),  do: {:ok, 8}
-  def type(@command_INTERNAL, @internal_LOG_MESSAGE),  do: {:ok, 9}
+  def type(@command_INTERNAL, @internal_BATTERY_LEVEL), do: {:ok, 0}
+  def type(@command_INTERNAL, @internal_TIME), do: {:ok, 1}
+  def type(@command_INTERNAL, @internal_VERSION), do: {:ok, 2}
+  def type(@command_INTERNAL, @internal_ID_REQUEST), do: {:ok, 3}
+  def type(@command_INTERNAL, @internal_ID_RESPONSE), do: {:ok, 4}
+  def type(@command_INTERNAL, @internal_INCLUSION_MODE), do: {:ok, 5}
+  def type(@command_INTERNAL, @internal_CONFIG), do: {:ok, 6}
+  def type(@command_INTERNAL, @internal_FIND_PARENT), do: {:ok, 7}
+  def type(@command_INTERNAL, @internal_FIND_PARENT_RESPONSE), do: {:ok, 8}
+  def type(@command_INTERNAL, @internal_LOG_MESSAGE), do: {:ok, 9}
   def type(@command_INTERNAL, @internal_CHILDREN), do: {:ok, 10}
   def type(@command_INTERNAL, @internal_SKETCH_NAME), do: {:ok, 11}
   def type(@command_INTERNAL, @internal_SKETCH_VERSION), do: {:ok, 12}
@@ -324,13 +324,13 @@ defmodule MySensors.Packet do
 
   @typedoc "MySensors packet"
   @type t :: %__MODULE__{
-    node_id: node_id,
-    child_sensor_id: child_sensor_id,
-    command: command,
-    type: type,
-    ack: ack,
-    payload: payload
-  }
+          node_id: node_id,
+          child_sensor_id: child_sensor_id,
+          command: command,
+          type: type,
+          ack: ack,
+          payload: payload
+        }
 
   @compile {:inline, decode: 1}
   def decode(binary) when is_binary(binary) do
@@ -342,16 +342,19 @@ defmodule MySensors.Packet do
 
   def decode([node_id_str, child_sensor_id_str, command_str, ack_str, type_str, payload_str]) do
     with {:ok, ack} <- ack_str |> String.to_integer() |> ack(),
-    {:ok, command} <- command_str |> String.to_integer() |> command(),
-    {:ok, type} <- type(command, String.to_integer(type_str)),
-    {node_id, _} <- Integer.parse(node_id_str),
-    {child_sensor_id, _} <- Integer.parse(child_sensor_id_str) do
-      opts = [node_id: node_id,
-              child_sensor_id: child_sensor_id,
-              command: command,
-              type: type,
-              ack: ack,
-              payload: payload_str]
+         {:ok, command} <- command_str |> String.to_integer() |> command(),
+         {:ok, type} <- type(command, String.to_integer(type_str)),
+         {node_id, _} <- Integer.parse(node_id_str),
+         {child_sensor_id, _} <- Integer.parse(child_sensor_id_str) do
+      opts = [
+        node_id: node_id,
+        child_sensor_id: child_sensor_id,
+        command: command,
+        type: type,
+        ack: ack,
+        payload: payload_str
+      ]
+
       {:ok, struct(__MODULE__, opts)}
     else
       :error -> {:error, :id_not_integer}
@@ -365,14 +368,17 @@ defmodule MySensors.Packet do
 
   def encode(%__MODULE__{} = packet) do
     with {:ok, command_id} <- command(packet.command),
-    {:ok, type_id} <- type(packet.command, packet.type),
-    {:ok, ack} <- ack(packet.ack) do
-      packet_list = [packet.node_id,
-                     packet.child_sensor_id,
-                     command_id,
-                     ack,
-                     type_id,
-                     packet.payload]
+         {:ok, type_id} <- type(packet.command, packet.type),
+         {:ok, ack} <- ack(packet.ack) do
+      packet_list = [
+        packet.node_id,
+        packet.child_sensor_id,
+        command_id,
+        ack,
+        type_id,
+        packet.payload
+      ]
+
       packet_string = Enum.join(packet_list, ";")
       {:ok, packet_string}
     else

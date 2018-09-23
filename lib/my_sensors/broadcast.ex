@@ -15,7 +15,7 @@ defmodule MySensors.Broadcast do
 
   @doc false
   def start_link do
-    GenServer.start_link(__MODULE__, [], [name: __MODULE__])
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   @doc """
@@ -27,7 +27,7 @@ defmodule MySensors.Broadcast do
 
   defmodule State do
     @moduledoc false
-    defstruct [subscribers: []]
+    defstruct subscribers: []
     @typedoc false
     @type t :: %__MODULE__{subscribers: [GenServer.server()]}
   end
@@ -39,7 +39,7 @@ defmodule MySensors.Broadcast do
   end
 
   def terminate(reason, _state) do
-    Logger.error "Broadcast module terminated: #{inspect reason}"
+    Logger.error("Broadcast module terminated: #{inspect(reason)}")
     :mnesia.unsubscribe({:table, Node, :detailed})
   end
 
@@ -66,7 +66,7 @@ defmodule MySensors.Broadcast do
   def do_dispatch_events(action, events, state) do
     for record <- events do
       for pid <- state.subscribers do
-        send pid, {:my_sensors, {action, Node.to_struct(record)}}
+        send(pid, {:my_sensors, {action, Node.to_struct(record)}})
       end
     end
   end

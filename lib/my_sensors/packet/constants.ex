@@ -9,7 +9,6 @@ defmodule MySensors.Packet.Constants do
   @doc false
   defmacro __using__(_) do
     quote do
-
       # COMMANDS
       @command_PRESENTATION :command_presentation
       @command_SET :command_set
@@ -156,10 +155,9 @@ defmodule MySensors.Packet.Constants do
       @ack_FALSE false
       @ack_UNKNOWN :ack_unknown
 
-      @stream_FIRMWARE_BLOCK_SIZE 16;
-      @internal_BROADCAST_ADDRESS 255;
-      @internal_NODE_SENSOR_ID 255;
-
+      @stream_FIRMWARE_BLOCK_SIZE 16
+      @internal_BROADCAST_ADDRESS 255
+      @internal_NODE_SENSOR_ID 255
     end
   end
 end

@@ -36,7 +36,7 @@ defmodule MySensors.Transport.Local do
 
   def terminate(reason, _) do
     Process.unregister(__MODULE__)
-    Logger.warn "Local transport died: #{inspect reason}"
+    Logger.warn("Local transport died: #{inspect(reason)}")
   end
 
   def handle_call({:register, pid}, _from, state) do
@@ -51,8 +51,9 @@ defmodule MySensors.Transport.Local do
 
   def handle_call({:write, packet}, _, state) do
     for pid <- state.registered do
-      send pid, packet
+      send(pid, packet)
     end
+
     {:reply, :ok, state}
   end
 

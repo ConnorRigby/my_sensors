@@ -11,7 +11,7 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
   end
 
   test "starts a local node" do
-    {:ok, local_node} = LocalNode.start_link(nil, [delete_on_exit: true])
+    {:ok, local_node} = LocalNode.start_link(nil, delete_on_exit: true)
     id = :sys.get_state(local_node).node.id
     assert id
     Broadcast.subscribe(self())
@@ -25,7 +25,7 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
 
   test "Starts a node from an existing node" do
     node = Context.new_node()
-    {:ok, local_node} = LocalNode.start_link(node, [delete_on_exit: true])
+    {:ok, local_node} = LocalNode.start_link(node, delete_on_exit: true)
     id = :sys.get_state(local_node).node.id
     assert id
     Broadcast.subscribe(self())
@@ -61,5 +61,4 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
     Context.delete_node(node.id)
     assert_receive {:EXIT, ^local_node, :deleted}, 2000
   end
-
 end

@@ -32,23 +32,23 @@ defmodule MySensors.Gateway do
     defstruct [:module, :opts, :pid, :ref]
     @typedoc false
     @type t :: %__MODULE__{
-      module: module,
-      opts: Keyword.t,
-      pid: GenServer.server,
-      ref: reference(),
-    }
+            module: module,
+            opts: Keyword.t(),
+            pid: GenServer.server(),
+            ref: reference()
+          }
   end
 
   defmodule State do
     @moduledoc false
     @typedoc false
-    @type t :: %__MODULE__{transports: [Transport.t]}
+    @type t :: %__MODULE__{transports: [Transport.t()]}
     defstruct [:transports]
   end
 
   @doc false
   def start_link do
-    GenServer.start_link(__MODULE__, [], [name: __MODULE__])
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   @doc false
@@ -57,40 +57,44 @@ defmodule MySensors.Gateway do
   end
 
   def terminate(reason, _state) do
-    Logger.info "Gateway stopping"
-    IO.inspect reason
+    Logger.info("Gateway stopping")
+    IO.inspect(reason)
   end
 
   def handle_call({:add_transport, transport, opts}, _from, state) do
     pid = Process.whereis(transport)
+
     if is_pid(pid) and Process.alive?(pid) do
       {:reply, {:error, {:already_started, pid}}, state}
     else
       case start_transport(transport, opts) do
         {:ok, pid} ->
           ref = Process.monitor(pid)
+
           tp_opts = [
             module: transport,
             opts: opts,
             pid: pid,
             ref: ref
           ]
+
           transport = struct(Transport, tp_opts)
           {:reply, :ok, %{state | transports: [transport | state.transports]}}
-          {:error, reason} ->
-            Logger.error "Failed to start transport: #{transport} - #{inspect reason}"
-            {:reply, :error, state}
-          end
-    end
 
+        {:error, reason} ->
+          Logger.error("Failed to start transport: #{transport} - #{inspect(reason)}")
+          {:reply, :error, state}
+      end
+    end
   end
 
   def handle_cast({:handle_packet, packet}, state) do
     case do_handle_packet(packet, state) do
       %State{} = state ->
         {:noreply, state}
+
       {:error, reason} ->
-        Logger.error "Failed to handle packet: #{inspect packet}: #{inspect reason}"
+        Logger.error("Failed to handle packet: #{inspect(packet)}: #{inspect(reason)}")
         {:noreply, state}
     end
   end
@@ -104,7 +108,7 @@ defmodule MySensors.Gateway do
   end
 
   def handle_info({:DOWN, ref, :process, pid, reason}, state)
-  when reason in [:normal, :shutdown] do
+      when reason in [:normal, :shutdown] do
     item = find_transport(pid, ref, state)
     {:noreply, %{state | transports: List.delete(state.transports, item)}}
   end
@@ -112,47 +116,52 @@ defmodule MySensors.Gateway do
   def handle_info({:DOWN, ref, :process, pid, reason}, state) do
     case find_transport(pid, ref, state) do
       %Transport{} = tp ->
-        Logger.error "Transport #{tp.module} died: #{inspect reason}"
+        Logger.error("Transport #{tp.module} died: #{inspect(reason)}")
+
         case start_transport(tp.module, tp.opts) do
           {:ok, pid} ->
             ref = Process.monitor(pid)
+
             tp_opts = [
               module: tp.module,
               opts: tp.opts,
               pid: pid,
               ref: ref
             ]
+
             transport = struct(Transport, tp_opts)
             {:noreply, %{state | transports: [transport | state.transports]}}
+
           {:error, reason} ->
-            Logger.error "Failed to start transport: #{tp.monitor} - #{inspect reason}"
+            Logger.error("Failed to start transport: #{tp.monitor} - #{inspect(reason)}")
             {:noreply, state}
         end
-      _ -> {:noreply, state}
+
+      _ ->
+        {:noreply, state}
     end
   end
 
   defp find_transport(pid, ref, state) do
-    Enum.find(state.transports, fn(%{pid: s_pid, ref: s_ref}) ->
-      (ref == s_ref) or (pid == s_pid)
+    Enum.find(state.transports, fn %{pid: s_pid, ref: s_ref} ->
+      ref == s_ref or pid == s_pid
     end)
   end
 
   defp start_transport(transport, opts) do
     with :ok <- validate_transport_module(transport),
-      {:ok, opts} <- transport.opts(opts),
-      {:ok, pid} <- GenServer.start(transport, opts) do
-        {:ok, pid}
-      else
-        {:error, reason} -> {:error, reason}
-        :ignore -> {:error, :ignore}
-      end
+         {:ok, opts} <- transport.opts(opts),
+         {:ok, pid} <- GenServer.start(transport, opts) do
+      {:ok, pid}
+    else
+      {:error, reason} -> {:error, reason}
+      :ignore -> {:error, :ignore}
+    end
   end
 
   defp validate_transport_module(module) when is_atom(module) do
     with true <- Code.ensure_loaded?(module),
-      true <- function_exported?(module, :opts, 1)
-    do
+         true <- function_exported?(module, :opts, 1) do
       :ok
     else
       _ -> {:error, :bad_behaviour}
@@ -166,9 +175,13 @@ defmodule MySensors.Gateway do
     state
   end
 
-  defp do_handle_packet(%Packet{command: @command_PRESENTATION, child_sensor_id: @internal_NODE_SENSOR_ID} = packet, state) do
+  defp do_handle_packet(
+         %Packet{command: @command_PRESENTATION, child_sensor_id: @internal_NODE_SENSOR_ID} =
+           packet,
+         state
+       ) do
     with {:ok, %Node{}} <- Context.save_protocol(packet),
-    {:ok, %Sensor{}} <- Context.save_sensor(packet) do
+         {:ok, %Sensor{}} <- Context.save_sensor(packet) do
       state
     else
       err -> err
@@ -191,7 +204,10 @@ defmodule MySensors.Gateway do
 
   defp do_handle_packet(%Packet{command: @command_REQ}, state), do: state
 
-  defp do_handle_packet(%Packet{command: @command_INTERNAL, type: @internal_BATTERY_LEVEL} = packet, state) do
+  defp do_handle_packet(
+         %Packet{command: @command_INTERNAL, type: @internal_BATTERY_LEVEL} = packet,
+         state
+       ) do
     case Context.save_battery_level(packet) do
       {:ok, %Node{}} -> state
       err -> err
@@ -203,37 +219,51 @@ defmodule MySensors.Gateway do
     state
   end
 
-  defp do_handle_packet(%Packet{command: @command_INTERNAL, type: @internal_ID_REQUEST} = packet, state) do
+  defp do_handle_packet(
+         %Packet{command: @command_INTERNAL, type: @internal_ID_REQUEST} = packet,
+         state
+       ) do
     case send_next_available_id(packet, state) do
       {:ok, %Node{}} -> state
       err -> err
     end
   end
 
-  defp do_handle_packet(%Packet{command: @command_INTERNAL, type: @internal_CONFIG} = packet, state) do
+  defp do_handle_packet(
+         %Packet{command: @command_INTERNAL, type: @internal_CONFIG} = packet,
+         state
+       ) do
     case send_config(packet, state) do
       {:ok, %Node{}} -> state
       err -> err
     end
   end
 
-  defp do_handle_packet(%Packet{command: @command_INTERNAL, type: @internal_SKETCH_NAME} = packet, state) do
+  defp do_handle_packet(
+         %Packet{command: @command_INTERNAL, type: @internal_SKETCH_NAME} = packet,
+         state
+       ) do
     case Context.save_sketch_name(packet) do
       {:ok, %Node{}} -> state
       err -> err
     end
   end
 
-  defp do_handle_packet(%Packet{command: @command_INTERNAL, type: @internal_SKETCH_VERSION} = packet, state) do
+  defp do_handle_packet(
+         %Packet{command: @command_INTERNAL, type: @internal_SKETCH_VERSION} = packet,
+         state
+       ) do
     case Context.save_sketch_version(packet) do
       {:ok, %Node{}} -> state
       err -> err
     end
   end
 
-
-  defp do_handle_packet(%Packet{command: @command_INTERNAL, type: @internal_LOG_MESSAGE} = packet, state) do
-    Logger.info "Node #{packet.node_id} => #{packet.payload}"
+  defp do_handle_packet(
+         %Packet{command: @command_INTERNAL, type: @internal_LOG_MESSAGE} = packet,
+         state
+       ) do
+    Logger.info("Node #{packet.node_id} => #{packet.payload}")
     state
   end
 
@@ -243,27 +273,32 @@ defmodule MySensors.Gateway do
   end
 
   defp do_handle_packet(%Packet{command: @command_INTERNAL} = packet, state) do
-    Logger.debug "Unhandled internal message: #{inspect packet}"
+    Logger.debug("Unhandled internal message: #{inspect(packet)}")
     state
   end
 
   defp do_handle_packet(%Packet{command: @command_STREAM}, state),
     do: state
 
-  @spec send_time(Packet.t, State.t) :: :ok | {:error, term}
+  @spec send_time(Packet.t(), State.t()) :: :ok | {:error, term}
   defp send_time(%Packet{} = packet, state) do
     time = :os.system_time(:seconds)
-    opts = [command: @command_INTERNAL,
-            ack: @ack_FALSE,
-            node_id: packet.node_id,
-            child_sensor_id: packet.child_sensor_id,
-            type: @internal_TIME,
-            payload: to_string(time)
-          ]
+
+    opts = [
+      command: @command_INTERNAL,
+      ack: @ack_FALSE,
+      node_id: packet.node_id,
+      child_sensor_id: packet.child_sensor_id,
+      type: @internal_TIME,
+      payload: to_string(time)
+    ]
+
     send_packet = struct(Packet, opts)
-    res = for %{module: tp, pid: pid} <- state.transports do
-      tp.write(pid, send_packet)
-    end
+
+    res =
+      for %{module: tp, pid: pid} <- state.transports do
+        tp.write(pid, send_packet)
+      end
 
     if Enum.all?(res, &match?(:ok, &1)) do
       :ok
@@ -272,7 +307,7 @@ defmodule MySensors.Gateway do
     end
   end
 
-  @spec send_config(Packet.t, State.t) :: {:ok, Node.t} | {:error, term}
+  @spec send_config(Packet.t(), State.t()) :: {:ok, Node.t()} | {:error, term}
   defp send_config(%Packet{} = packet, state) do
     opts = [
       payload: "I",
@@ -284,9 +319,11 @@ defmodule MySensors.Gateway do
     ]
 
     send_packet = struct(Packet, opts)
-    res = for %{module: tp, pid: pid} <- state.transports do
-      tp.write(pid, send_packet)
-    end
+
+    res =
+      for %{module: tp, pid: pid} <- state.transports do
+        tp.write(pid, send_packet)
+      end
 
     if Enum.all?(res, &match?(:ok, &1)) do
       Context.save_config(send_packet)
@@ -295,9 +332,8 @@ defmodule MySensors.Gateway do
     end
   end
 
-  @spec send_next_available_id(Packet.t, State.t) :: {:ok, Node.t} | {:error, term}
+  @spec send_next_available_id(Packet.t(), State.t()) :: {:ok, Node.t()} | {:error, term}
   defp send_next_available_id(%Packet{}, state) do
-
     node = Context.new_node()
 
     packet_opts = [
@@ -308,10 +344,13 @@ defmodule MySensors.Gateway do
       ack: @ack_FALSE,
       payload: node.id
     ]
+
     send_packet = struct(Packet, packet_opts)
-    res = for %{module: tp, pid: pid} <- state.transports do
-      tp.write(pid,  send_packet)
-    end
+
+    res =
+      for %{module: tp, pid: pid} <- state.transports do
+        tp.write(pid, send_packet)
+      end
 
     if Enum.all?(res, &match?(:ok, &1)) do
       {:ok, node}

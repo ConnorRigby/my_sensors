@@ -15,11 +15,13 @@ defmodule MySensors.Transport.TCP do
   def init(opts) do
     host = Keyword.fetch!(opts, :host)
     port = Keyword.fetch!(opts, :port)
+
     socket_opts = [
       :binary,
       {:active, true},
       {:packet, :line}
     ]
+
     {:ok, socket} = :gen_tcp.connect(host, port, socket_opts)
     {:ok, %{socket: socket}}
   end
@@ -28,14 +30,16 @@ defmodule MySensors.Transport.TCP do
     case Packet.decode(info) do
       {:ok, %Packet{} = packet} ->
         Gateway.handle_packet(packet)
+
       {:error, reason} ->
-        Logger.error "error decoding TCP packet: #{info} : #{inspect reason}"
+        Logger.error("error decoding TCP packet: #{info} : #{inspect(reason)}")
     end
-    {:noreply, state }
+
+    {:noreply, state}
   end
 
   def handle_info(info, state) do
-    IO.inspect info
+    IO.inspect(info)
     {:noreply, state}
   end
 
@@ -44,8 +48,9 @@ defmodule MySensors.Transport.TCP do
       {:ok, bin} ->
         :gen_tcp.send(state.socket, bin <> "\n")
         {:reply, :ok, state}
+
       {:error, reason} ->
-        Logger.error "error encodeing packet: #{inspect packet}: #{inspect reason}"
+        Logger.error("error encodeing packet: #{inspect(packet)}: #{inspect(reason)}")
         {:reply, {:error, reason}, state}
     end
   end

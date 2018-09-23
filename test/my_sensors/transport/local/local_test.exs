@@ -7,6 +7,7 @@ defmodule MySensors.Transport.LocalTest do
 
   test "recieves dispatched packets" do
     Gateway.add_transport(Local, [])
+
     packet = %Packet{
       node_id: @internal_BROADCAST_ADDRESS,
       child_sensor_id: @internal_NODE_SENSOR_ID,
@@ -15,8 +16,10 @@ defmodule MySensors.Transport.LocalTest do
       type: @internal_TIME,
       payload: ""
     }
+
     :ok = Local.register(self())
     :ok = Local.dispatch(packet)
+
     assert_receive %Packet{
       ack: false,
       child_sensor_id: 255,
@@ -25,6 +28,7 @@ defmodule MySensors.Transport.LocalTest do
       payload: _,
       type: :internal_time
     }
+
     Local.stop()
   end
 end

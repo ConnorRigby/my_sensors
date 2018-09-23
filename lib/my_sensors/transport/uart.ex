@@ -16,9 +16,8 @@ defmodule MySensors.Transport.UART do
   """
   def opts(opts) do
     with {:ok, device} <- Keyword.fetch(opts, :device),
-      speed <- Keyword.get(opts, :speed, 115200),
-      seperator <- Keyword.get(opts, :seperator, "\n")
-    do
+         speed <- Keyword.get(opts, :speed, 115_200),
+         seperator <- Keyword.get(opts, :seperator, "\n") do
       {:ok, [device: device, speed: speed, seperator: seperator]}
     else
       :error -> {:error, {:missing_opt, :device}}
@@ -27,11 +26,14 @@ defmodule MySensors.Transport.UART do
 
   def init(opts) do
     {:ok, uart} = UART.start_link()
+
     case UART.open(uart, opts[:device], active: true, speed: opts[:speed]) do
       :ok ->
         :ok = UART.configure(uart, framing: {UART.Framing.Line, separator: opts[:seperator]})
         {:ok, %{uart: uart}}
-      {:error, reason} -> {:stop, reason}
+
+      {:error, reason} ->
+        {:stop, reason}
     end
   end
 
@@ -49,7 +51,7 @@ defmodule MySensors.Transport.UART do
       {:noreply, state}
     else
       {:error, reason} ->
-        Logger.error "Error decoding packet: #{command} #{inspect reason}"
+        Logger.error("Error decoding packet: #{command} #{inspect(reason)}")
         {:noreply, state}
     end
   end
@@ -60,7 +62,7 @@ defmodule MySensors.Transport.UART do
       {:reply, r, state}
     else
       {:error, reason} ->
-        Logger.error "Failed to encode packet: #{inspect packet} #{inspect reason}"
+        Logger.error("Failed to encode packet: #{inspect(packet)} #{inspect(reason)}")
         {:reply, {:error, reason}, state}
     end
   end
