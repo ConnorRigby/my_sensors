@@ -9,65 +9,37 @@ defmodule MySensors.Broadcast do
   and `data` will be a `Node` struct.
   """
 
-  use GenServer
   alias MySensors.Node
   require Logger
+  @name MySensorsRegistry
 
   @doc false
-  def start_link do
-    GenServer.start_link(__MODULE__, [], name: __MODULE__)
+  def child_spec(opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [opts]},
+      type: :worker,
+      restart: :permanent,
+      shutdown: 500
+    }
+  end
+
+  @doc false
+  def start_link(_args) do
+    Registry.start_link(keys: :duplicate, name: @name)
   end
 
   @doc """
   Subscribe to events about MySensors Data.
   """
-  def subscribe(pid) do
-    GenServer.call(__MODULE__, {:subscribe, pid})
+  def subscribe() do
+    {:ok, _} = Registry.register(@name, __MODULE__, [])
+    :ok
   end
 
-  defmodule State do
-    @moduledoc false
-    defstruct subscribers: []
-    @typedoc false
-    @type t :: %__MODULE__{subscribers: [GenServer.server()]}
-  end
-
-  def init([]) do
-    {:ok, _} = :mnesia.subscribe({:table, Node, :detailed})
-    state = struct(State)
-    {:ok, state}
-  end
-
-  def terminate(reason, _state) do
-    Logger.error("Broadcast module terminated: #{inspect(reason)}")
-    :mnesia.unsubscribe({:table, Node, :detailed})
-  end
-
-  def handle_call({:subscribe, pid}, _from, state) do
-    Process.monitor(pid)
-    {:reply, :ok, %{state | subscribers: [pid | state.subscribers]}}
-  end
-
-  def handle_info({:mnesia_table_event, {:write, Node, record, _, _}}, state) do
-    do_dispatch_events(:insert_or_update, [record], state)
-    {:noreply, state}
-  end
-
-  def handle_info({:mnesia_table_event, {:delete, Node, {Node, _id}, records, _}}, state) do
-    do_dispatch_events(:delete, records, state)
-    {:noreply, state}
-  end
-
-  def handle_info({:DOWN, _, :process, pid, _reason}, state) do
-    new_subscribers = List.delete(state.subscribers, pid)
-    {:noreply, %{state | subscribers: new_subscribers}}
-  end
-
-  def do_dispatch_events(action, events, state) do
-    for record <- events do
-      for pid <- state.subscribers do
-        send(pid, {:my_sensors, {action, Node.to_struct(record)}})
-      end
-    end
+  def dispatch(msg) do
+    Registry.dispatch(@name, __MODULE__, fn entries ->
+      for {pid, _} <- entries, do: send(pid, {:my_sensors, msg})
+    end)
   end
 end

@@ -148,7 +148,7 @@ defmodule MySensors.ContextTest do
     }
 
     {:ok, %SensorValue{} = sv} = Context.save_sensor_value(sensor_value_packet)
-    assert sv.sensor_id == sensor.child_sensor_id
+    assert sv.sensor_id == sensor.id
     assert sv.value == 1.0
   end
 

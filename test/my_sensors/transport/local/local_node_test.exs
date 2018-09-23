@@ -14,7 +14,7 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
     {:ok, local_node} = LocalNode.start_link(nil, delete_on_exit: true)
     id = :sys.get_state(local_node).node.id
     assert id
-    Broadcast.subscribe(self())
+    Broadcast.subscribe()
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
@@ -28,7 +28,7 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
     {:ok, local_node} = LocalNode.start_link(node, delete_on_exit: true)
     id = :sys.get_state(local_node).node.id
     assert id
-    Broadcast.subscribe(self())
+    Broadcast.subscribe()
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
@@ -39,7 +39,7 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
 
   test "adds a fake sensor to a fake node" do
     {:ok, local_node} = LocalNode.start_link(nil, [])
-    Broadcast.subscribe(self())
+    Broadcast.subscribe()
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
@@ -51,7 +51,7 @@ defmodule MySensors.Gateway.Local.LocalNodeTest do
     Process.flag(:trap_exit, true)
     node = Context.new_node()
     {:ok, local_node} = LocalNode.start_link(node, [])
-    Broadcast.subscribe(self())
+    Broadcast.subscribe()
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000
     assert_receive {:my_sensors, {:insert_or_update, %MySensors.Node{}}}, 2000

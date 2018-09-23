@@ -1,31 +1,26 @@
 defmodule MySensors.SensorValue do
   @moduledoc "SensorValue Object"
 
-  import Record
+  use Ecto.Schema
+  import Ecto.Changeset
 
-  @keys [
-    :sensor_id,
-    :type,
-    :value
-  ]
+  schema "sensor_values" do
+    field :type, :string
+    field :value, :float
+    belongs_to(:sensor, MySensors.Sensor)
+    timestamps()
+  end
 
-  defstruct @keys
-  defrecord __MODULE__, @keys
+  @optional [:type, :value]
 
-  @typedoc false
+  def changeset(sensor_value, params \\ %{}) do
+    sensor_value
+    |> cast(params, @optional)
+    |> validate_required([])
+  end
+
   @type t :: %__MODULE__{
-          sensor_id: integer,
-          type: String.t(),
-          value: any
-        }
-
-  def to_struct({__MODULE__, sensor_id, type, value}) do
-    struct(__MODULE__, sensor_id: sensor_id, type: type, value: value)
-  end
-
-  def from_struct(%__MODULE__{sensor_id: sensor_id, type: type, value: value}) do
-    {__MODULE__, sensor_id, type, value}
-  end
-
-  def keys, do: @keys
+    type: String.t(),
+    value: float
+  }
 end

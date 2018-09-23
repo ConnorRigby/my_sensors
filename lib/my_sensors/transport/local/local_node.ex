@@ -31,7 +31,7 @@ defmodule MySensors.Transport.Local.LocalNode do
 
   def init([node, opts]) do
     Local.register(self())
-    Broadcast.subscribe(self())
+    Broadcast.subscribe()
 
     if node do
       # We already have an id and whatnot.

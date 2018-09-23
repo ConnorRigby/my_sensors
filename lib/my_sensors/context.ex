@@ -1,67 +1,48 @@
 defmodule MySensors.Context do
   @moduledoc "Repo Context for MySensors"
 
-  alias MySensors.{Packet, Node, Sensor, SensorValue}
+  alias MySensors.{Context, Repo, Packet, Node, Sensor, SensorValue}
   use Packet.Constants
   require Logger
+  import Ecto.Query, warn: false
 
   @doc "Get a node by id."
   @spec get_node(integer) :: Node.t() | nil
   def get_node(id) do
-    res = :mnesia.transaction(fn -> :mnesia.read(Node, id) end)
-
-    case res do
-      {:atomic, [record]} -> Node.to_struct(record)
-      {:atomic, []} -> nil
-    end
+    Repo.get(Node, id)
+    |> Repo.preload(:sensors)
   end
 
   @doc "Delete a node by id."
   def delete_node(id) do
-    case :mnesia.transaction(fn -> :mnesia.delete({Node, id}) end) do
-      {:atomic, :ok} -> :ok
+    with %Node{} = node <- Context.get_node(id) do
+      Repo.delete(node)
+      |> do_dispatch(:delete)
     end
   end
 
   @doc "Get all nodes."
   @spec all_nodes :: [Node.t()]
   def all_nodes do
-    case :mnesia.transaction(fn -> :mnesia.all_keys(Node) end) do
-      {:atomic, ids} -> Enum.map(ids, &get_node(&1))
-      err -> err
-    end
+    Repo.all(Node)
   end
 
   @doc "Get a nenw node."
   @spec new_node :: Node.t()
   def new_node do
-    id =
-      case :mnesia.transaction(fn -> :mnesia.last(Node) end) do
-        {:atomic, :"$end_of_table"} -> 0
-        {:atomic, id} -> id
-      end
-
-    new_node = struct(Node, id: id + 1)
-    fun = fn -> :mnesia.write(Node.from_struct(new_node)) end
-
-    case :mnesia.transaction(fun) do
-      {:atomic, :ok} -> new_node
-      err -> err
-    end
+    %Node{}
+    |> Node.changeset(%{})
+    |> Repo.insert!()
+    |> do_dispatch(:insert_or_update)
   end
 
   @doc "Updata a node."
   @spec update_node(Node.t(), map) :: {:ok, Node.t()} | {:error, term}
-  def update_node(node, params) do
-    params = Map.new(params)
-    map = Map.take(params, Node.keys())
-    new_node = Map.merge(node, map)
-    record = Node.from_struct(new_node)
-
-    case :mnesia.transaction(fn -> :mnesia.write(record) end) do
-      {:atomic, :ok} -> {:ok, new_node}
-      err -> err
-    end
+  def update_node(%Node{} = node, params) do
+    node
+    |> Node.changeset(params)
+    |> Repo.update()
+    |> do_dispatch(:insert_or_update)
   end
 
   @doc "Saves the protocol of a node from a packet"
@@ -165,7 +146,7 @@ defmodule MySensors.Context do
       }) do
     case get_sensor(node_id, sid) do
       %Sensor{} = sensor ->
-        update_sensor(sensor, %{type: type})
+        update_sensor(sensor, %{type: to_string(type)})
 
       nil ->
         case get_node(node_id) do
@@ -173,20 +154,10 @@ defmodule MySensors.Context do
             {:error, :no_node}
 
           %Node{} = node ->
-            sensor =
-              struct(Sensor,
-                child_sensor_id: sid,
-                node_id: node_id,
-                type: to_string(type),
-                sensor_values: []
-              )
-
-            new_sensors = node.sensors ++ [sensor]
-
-            case update_node(node, %{sensors: new_sensors}) do
-              {:ok, %Node{}} -> {:ok, sensor}
-              err -> err
-            end
+            Ecto.build_assoc(node, :sensors)
+            |> Sensor.changeset(%{child_sensor_id: sid, type: to_string(type)})
+            |> Repo.insert()
+            |> do_dispatch(:insert_or_update)
         end
     end
   end
@@ -203,14 +174,10 @@ defmodule MySensors.Context do
     case get_sensor(node_id, sid) do
       %Sensor{} = sensor ->
         {value, _} = Float.parse(payload)
-        sv = struct(SensorValue, sensor_id: sid, type: to_string(type), value: value)
-        new_sensor_values = sensor.sensor_values ++ [sv]
-
-        case update_sensor(sensor, sensor_values: new_sensor_values) do
-          {:ok, %Sensor{}} -> {:ok, sv}
-          err -> err
-        end
-
+        Ecto.build_assoc(sensor, :sensor_values)
+        |> SensorValue.changeset(%{type: to_string(type), value: value})
+        |> Repo.insert()
+        |> do_dispatch(:insert_or_update)
       nil ->
         {:error, :no_sensor}
     end
@@ -240,28 +207,28 @@ defmodule MySensors.Context do
   end
 
   def update_sensor(%Sensor{} = sensor, params) do
-    params = Map.new(params)
-    map = Map.take(params, Sensor.keys())
-    new_sensor = Map.merge(sensor, map)
-
     case get_node(sensor.node_id) do
       %Node{} = node ->
-        new_sensors =
-          Enum.map(node.sensors, fn %Sensor{} = s_sensor ->
-            if s_sensor.child_sensor_id == sensor.child_sensor_id do
-              new_sensor
-            else
-              s_sensor
-            end
-          end)
-
-        case update_node(node, %{sensors: new_sensors}) do
-          {:ok, %Node{}} -> {:ok, new_sensor}
-          err -> err
-        end
-
+        Ecto.build_assoc(node, :sensors, sensor)
+        |> Sensor.changeset(params)
+        |> Repo.update()
+        |> do_dispatch(:insert_or_update)
       nil ->
         {:error, :no_node}
     end
+  end
+
+  defp do_dispatch({:error, _} = data, _) do
+    data
+  end
+
+  defp do_dispatch({:ok, data} = val, kind) do
+    MySensors.Broadcast.dispatch({kind, data})
+    val
+  end
+
+  defp do_dispatch(data, kind) do
+    MySensors.Broadcast.dispatch({kind, data})
+    data
   end
 end

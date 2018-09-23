@@ -7,9 +7,9 @@ defmodule MySensors.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-      worker(MySensors.Repo, []),
-      worker(MySensors.Broadcast, []),
-      worker(MySensors.Gateway, [])
+      {MySensors.Repo, []},
+      {MySensors.Broadcast, []},
+      {MySensors.Gateway, []}
     ]
 
     opts = [strategy: :one_for_one, name: __MODULE__]
