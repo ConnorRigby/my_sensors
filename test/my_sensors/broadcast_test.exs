@@ -5,7 +5,7 @@ defmodule MySensors.BroadcastTest do
   doctest Broadcast
 
   test "gets node object notifications on update" do
-    Broadcast.subscribe(self())
+    Broadcast.subscribe()
     node = Context.new_node()
     Context.update_node(node, %{sketch_name: "some name"})
     id = node.id
@@ -14,7 +14,7 @@ defmodule MySensors.BroadcastTest do
   end
 
   test "gets node object notifications on delete" do
-    Broadcast.subscribe(self())
+    Broadcast.subscribe()
     node = Context.new_node()
     id = node.id
     Context.delete_node(id)

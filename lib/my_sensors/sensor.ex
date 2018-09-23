@@ -1,45 +1,30 @@
 defmodule MySensors.Sensor do
   @moduledoc "Sensor Object"
 
-  alias MySensors.SensorValue
-  import Record
+  use Ecto.Schema
+  import Ecto.Changeset
+  alias MySensors.{Node, SensorValue}
 
-  @keys [
-    :child_sensor_id,
-    :node_id,
-    :type,
-    :sensor_values
-  ]
+  schema "sensors" do
+    field :type, :string
+    field :child_sensor_id, :integer
+    belongs_to(:node, Node)
+    has_many(:sensor_values, SensorValue)
+    timestamps()
+  end
 
-  @typedoc false
+  @optional [:type, :child_sensor_id]
+
+  def changeset(sensor, params \\ %{}) do
+    sensor
+    |> cast(params, @optional)
+    |> validate_required([])
+    |> unique_constraint(:child_sensor_id, name: :sensors_child_sensor_id_node_id_index)
+  end
+
   @type t :: %__MODULE__{
-          child_sensor_id: integer,
-          node_id: integer,
-          type: String.t(),
-          sensor_values: [SensorValue.t()]
-        }
-
-  defstruct @keys
-  defrecord __MODULE__, @keys
-
-  def to_struct({__MODULE__, child_sensor_id, node_id, type, sensor_values}) do
-    struct(__MODULE__,
-      child_sensor_id: child_sensor_id,
-      node_id: node_id,
-      type: type,
-      sensor_values: Enum.map(sensor_values, &SensorValue.to_struct(&1))
-    )
-  end
-
-  def from_struct(%__MODULE__{
-        child_sensor_id: child_sensor_id,
-        node_id: node_id,
-        type: type,
-        sensor_values: sensor_values
-      }) do
-    {__MODULE__, child_sensor_id, node_id, type,
-     Enum.map(sensor_values, &SensorValue.from_struct(&1))}
-  end
-
-  def keys, do: @keys
+    child_sensor_id: integer,
+    type: String.t(),
+    sensor_values: [SensorValue.t()]
+  }
 end
