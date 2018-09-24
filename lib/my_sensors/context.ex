@@ -24,7 +24,7 @@ defmodule MySensors.Context do
   @doc "Get all nodes."
   @spec all_nodes :: [Node.t()]
   def all_nodes do
-    Repo.all(Node)
+    Repo.all(Node, preload: :sensors)
   end
 
   @doc "Get a nenw node."
@@ -33,6 +33,7 @@ defmodule MySensors.Context do
     %Node{}
     |> Node.changeset(%{})
     |> Repo.insert!()
+    |> Repo.preload(:sensors)
     |> do_dispatch(:insert_or_update)
   end
 
@@ -160,6 +161,7 @@ defmodule MySensors.Context do
             |> do_dispatch(:insert_or_update)
         end
     end
+
   end
 
   @doc "Save a sensor_value from a sensor."
@@ -201,7 +203,7 @@ defmodule MySensors.Context do
   @spec all_sensors(integer) :: [Sensor.t()] | nil
   def all_sensors(node_id) do
     case get_node(node_id) do
-      %Node{sensors: sensors} -> sensors
+      %Node{sensors: sensors} when is_list(sensors) -> sensors
       nil -> nil
     end
   end

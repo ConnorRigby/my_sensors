@@ -8,8 +8,8 @@ defmodule MySensors.Sensor do
   schema "sensors" do
     field :type, :string
     field :child_sensor_id, :integer
-    belongs_to(:node, Node)
-    has_many(:sensor_values, SensorValue)
+    belongs_to(:node, Node, on_replace: :delete)
+    has_many(:sensor_values, SensorValue, on_delete: :delete_all)
     timestamps()
   end
 

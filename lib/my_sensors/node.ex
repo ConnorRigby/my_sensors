@@ -11,7 +11,7 @@ defmodule MySensors.Node do
     field :sketch_name, :string
     field :sketch_version, :string
     field :config, :string
-    has_many(:sensors, MySensors.Sensor)
+    has_many(:sensors, MySensors.Sensor, on_delete: :delete_all)
     timestamps()
   end
 

@@ -58,7 +58,6 @@ defmodule MySensors.Gateway do
 
   def terminate(reason, _state) do
     Logger.info("Gateway stopping")
-    IO.inspect(reason)
   end
 
   def handle_call({:add_transport, transport, opts}, _from, state) do
