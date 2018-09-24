@@ -5,8 +5,8 @@ defmodule MySensors.SensorValue do
   import Ecto.Changeset
 
   schema "sensor_values" do
-    field :type, :string
-    field :value, :float
+    field(:type, :string)
+    field(:value, :float)
     belongs_to(:sensor, MySensors.Sensor)
     timestamps()
   end
@@ -20,7 +20,7 @@ defmodule MySensors.SensorValue do
   end
 
   @type t :: %__MODULE__{
-    type: String.t(),
-    value: float
-  }
+          type: String.t(),
+          value: float
+        }
 end

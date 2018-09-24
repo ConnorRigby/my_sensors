@@ -4,14 +4,13 @@ defmodule MySensors.Mixfile do
   def project do
     [
       app: :my_sensors,
-      version: "0.1.0-rc2",
+      version: "0.2.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
       description: description(),
       test_coverage: [tool: ExCoveralls],
-      dialyzer: [plt_add_apps: [:mnesia], plt_add_deps: :apps_direct],
       preferred_cli_env: [
         test: :test,
         coveralls: :test,
@@ -34,10 +33,9 @@ defmodule MySensors.Mixfile do
   defp deps do
     [
       {:nerves_uart, "~> 1.2"},
-      {:ecto, "~> 2.2"},
+      {:ecto, "2.2.5"},
       {:sqlite_ecto2, "~> 2.2", optional: true},
-      
-      {:ex_doc, "~> 0.19", only: [:dev, :test]},
+      {:ex_doc, "~> 0.19", only: [:docs]},
       {:dialyxir, "~> 1.0.0-rc.3", only: [:dev], runtime: false},
       {:faker, "~> 0.10"},
       {:excoveralls, "~> 0.10", only: :test}

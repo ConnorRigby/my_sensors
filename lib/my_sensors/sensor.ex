@@ -6,10 +6,10 @@ defmodule MySensors.Sensor do
   alias MySensors.{Node, SensorValue}
 
   schema "sensors" do
-    field :type, :string
-    field :child_sensor_id, :integer
-    belongs_to(:node, Node)
-    has_many(:sensor_values, SensorValue)
+    field(:type, :string)
+    field(:child_sensor_id, :integer)
+    belongs_to(:node, Node, on_replace: :delete)
+    has_many(:sensor_values, SensorValue, on_delete: :delete_all)
     timestamps()
   end
 
@@ -23,8 +23,8 @@ defmodule MySensors.Sensor do
   end
 
   @type t :: %__MODULE__{
-    child_sensor_id: integer,
-    type: String.t(),
-    sensor_values: [SensorValue.t()]
-  }
+          child_sensor_id: integer,
+          type: String.t(),
+          sensor_values: [SensorValue.t()]
+        }
 end
