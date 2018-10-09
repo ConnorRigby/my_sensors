@@ -12,11 +12,21 @@ defmodule MySensors.Node do
     field(:sketch_name, :string)
     field(:sketch_version, :string)
     field(:config, :string)
+    field(:status, :string, default: "ok")
     has_many(:sensors, MySensors.Sensor, on_delete: :delete_all)
     timestamps()
   end
 
-  @optional [:id, :name, :battery_level, :protocol, :sketch_name, :sketch_version, :config]
+  @optional [
+    :id,
+    :name,
+    :battery_level,
+    :protocol,
+    :sketch_name,
+    :sketch_version,
+    :config,
+    :status
+  ]
 
   def changeset(node, params \\ %{}) do
     node

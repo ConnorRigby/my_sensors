@@ -13,6 +13,20 @@ defmodule MySensors.Context do
     |> Repo.preload(:sensors)
   end
 
+  @spec get_id_status(integer) :: Node.t() | {:error, :no_node}
+  def get_id_status(id) do
+    Repo.one(from(n in Node, where: n.id == ^id, select: n.status)) || {:error, :no_node}
+  end
+
+  @spec set_id_status(integer, String.t()) :: {:ok, Node.t()} | {:error, term}
+  def set_id_status(id, status) do
+    with %Node{} = node <- get_node(id) do
+      update_node(node, %{status: status})
+    else
+      nil -> {:error, :no_node}
+    end
+  end
+
   @doc "Delete a node by id."
   def delete_node(id) do
     with %Node{} = node <- Context.get_node(id) do
@@ -50,6 +64,14 @@ defmodule MySensors.Context do
     |> Node.changeset(params)
     |> Repo.update()
     |> do_dispatch(:insert_or_update)
+  end
+
+  def save_node(%Packet{node_id: node_id}) when node_id > 0 do
+    with {:ok, %Node{} = node} <- set_id_status(node_id, "ok") do
+      {:ok, node}
+    else
+      _ -> new_node(%{id: node_id})
+    end 
   end
 
   @doc "Saves the protocol of a node from a packet"

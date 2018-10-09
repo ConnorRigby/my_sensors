@@ -22,8 +22,21 @@ defmodule MySensors.Packet do
     * Varies based on Packet Command.
   * 6 Payload
   """
+  defstruct [:node_id, :child_sensor_id, :command, :type, :ack, :payload]
 
   use MySensors.Packet.Constants
+
+  def binary(val) do
+    %MySensors.Packet{
+      ack: false,
+      child_sensor_id: 1,
+      node_id: 2,
+      payload: val,
+      command: :command_set,
+      type: :value_status
+    }
+    |> MySensors.Gateway.write_packet()
+  end
 
   @doc "Parse a packet `command`."
   @compile {:inline, command: 1}
@@ -319,8 +332,6 @@ defmodule MySensors.Packet do
   @type payload :: binary
   @type node_id :: integer
   @type child_sensor_id :: integer
-
-  defstruct [:node_id, :child_sensor_id, :command, :type, :ack, :payload]
 
   @typedoc "MySensors packet"
   @type t :: %__MODULE__{

@@ -6,6 +6,13 @@ defmodule MySensors.Gateway do
 
   use Packet.Constants
 
+  # Each node has 10 seconds to respond
+  # to heart messages.
+  @heart_timeout_ms 10_000
+
+  # Every 30 seconds start a timer for _every_ node.
+  @heart_global_timeout_ms 30_000
+
   @doc """
   Start a Gateway.
   * Transport - the mechanism in which [MySensors.Packet](MySensors.Packet.html)
@@ -42,8 +49,11 @@ defmodule MySensors.Gateway do
   defmodule State do
     @moduledoc false
     @typedoc false
-    @type t :: %__MODULE__{transports: [Transport.t()]}
-    defstruct [:transports]
+    @type t :: %__MODULE__{
+            transports: [Transport.t()],
+            hearts: %{optional(integer) => reference}
+          }
+    defstruct [:transports, :hearts]
   end
 
   @doc false
@@ -53,7 +63,8 @@ defmodule MySensors.Gateway do
 
   @doc false
   def init([]) do
-    {:ok, struct(State, transports: [])}
+    start_global_heart_timer()
+    {:ok, struct(State, transports: [], hearts: %{})}
   end
 
   def terminate(_reason, _state) do
@@ -78,7 +89,18 @@ defmodule MySensors.Gateway do
           ]
 
           transport = struct(Transport, tp_opts)
-          {:reply, :ok, %{state | transports: [transport | state.transports]}}
+
+          discovery_packet = %MySensors.Packet{
+            ack: @ack_FALSE,
+            child_sensor_id: @internal_NODE_SENSOR_ID,
+            command: @command_INTERNAL,
+            node_id: @internal_BROADCAST_ADDRESS,
+            payload: "",
+            type: @internal_DISCOVER_REQUEST
+          }
+
+          transport.module.write(pid, discovery_packet)
+          {:reply, {:ok, pid}, %{state | transports: [transport | state.transports]}}
 
         {:error, reason} ->
           Logger.error("Failed to start transport: #{transport} - #{inspect(reason)}")
@@ -99,11 +121,35 @@ defmodule MySensors.Gateway do
   end
 
   def handle_cast({:write_packet, packet}, state) do
-    for %{module: tp, pid: pid} <- state.transports do
-      tp.write_packet(pid, packet)
+    do_write(state, packet)
+    {:noreply, state}
+  end
+
+  def handle_info({@internal_HEARTBEAT_REQUEST, :global}, state) do
+    state =
+      Enum.reduce(Context.all_nodes(), state, fn %Node{id: id}, state ->
+        maybe_start_heart_timer(state, id)
+      end)
+
+    start_global_heart_timer()
+    {:noreply, state}
+  end
+
+  # This is the message that comes from maybe_start_heart(state, id)
+  def handle_info({@internal_HEARTBEAT_REQUEST, id}, state) do
+    case Context.get_id_status(id) do
+      {:error, _} ->
+        :ok
+
+      "unknown" ->
+        :ok
+
+      _ ->
+        Context.set_id_status(id, "unknown")
+        Logger.warn("Node not responding!! #{id}")
     end
 
-    {:noreply, state}
+    {:noreply, %{state | hearts: Map.delete(state.hearts, id)}}
   end
 
   def handle_info({:DOWN, ref, :process, pid, reason}, state)
@@ -267,12 +313,34 @@ defmodule MySensors.Gateway do
   end
 
   defp do_handle_packet(%Packet{command: @command_INTERNAL, type: @internal_GATEWAY_READY}, state) do
-    # %{state | status: Map.put(state.status, :ready, true)}
     state
   end
 
+  defp do_handle_packet(
+         %Packet{command: @command_INTERNAL, type: @internal_DISCOVER_RESPONSE} = packet,
+         state
+       ) do
+    case Context.save_node(packet) do
+      {:ok, %Node{}} -> state
+      err -> err
+    end
+  end
+
+  defp do_handle_packet(
+         %Packet{command: @command_INTERNAL, type: @internal_HEARTBEAT_RESPONSE} = packet,
+         state
+       ) do
+    case Context.save_node(packet) do
+      {:ok, %Node{id: id}} ->
+        maybe_cancel_heart_timer(state, id)
+
+      err ->
+        err
+    end
+  end
+
   defp do_handle_packet(%Packet{command: @command_INTERNAL} = packet, state) do
-    Logger.debug("Unhandled internal message: #{inspect(packet)}")
+    Logger.warn("Unhandled internal message: #{inspect(packet)}")
     state
   end
 
@@ -293,11 +361,7 @@ defmodule MySensors.Gateway do
     ]
 
     send_packet = struct(Packet, opts)
-
-    res =
-      for %{module: tp, pid: pid} <- state.transports do
-        tp.write(pid, send_packet)
-      end
+    res = do_write(state, send_packet)
 
     if Enum.all?(res, &match?(:ok, &1)) do
       :ok
@@ -318,11 +382,7 @@ defmodule MySensors.Gateway do
     ]
 
     send_packet = struct(Packet, opts)
-
-    res =
-      for %{module: tp, pid: pid} <- state.transports do
-        tp.write(pid, send_packet)
-      end
+    res = do_write(state, send_packet)
 
     if Enum.all?(res, &match?(:ok, &1)) do
       Context.save_config(send_packet)
@@ -346,16 +406,45 @@ defmodule MySensors.Gateway do
     ]
 
     send_packet = struct(Packet, packet_opts)
-
-    res =
-      for %{module: tp, pid: pid} <- state.transports do
-        tp.write(pid, send_packet)
-      end
+    res = do_write(state, send_packet)
 
     if Enum.all?(res, &match?(:ok, &1)) do
       {:ok, node}
     else
       {:error, :failed_to_send}
     end
+  end
+
+  defp do_write(state, packet) do
+    for %{module: tp, pid: pid} <- state.transports do
+      tp.write(pid, packet)
+    end
+  end
+
+  defp start_global_heart_timer() do
+    Process.send_after(self(), {@internal_HEARTBEAT_REQUEST, :global}, @heart_global_timeout_ms)
+  end
+
+  defp maybe_cancel_heart_timer(state, id) do
+    state.hearts[id] && Process.cancel_timer(state.hearts[id])
+    %{state | hearts: Map.delete(state.hearts, id)}
+  end
+
+  defp maybe_start_heart_timer(state, id) do
+    state.hearts[id] && Process.cancel_timer(state.hearts[id])
+    _ = do_write(state, heart_packet(id))
+    ref = Process.send_after(self(), {@internal_HEARTBEAT_REQUEST, id}, @heart_timeout_ms)
+    %{state | hearts: Map.put(state.hearts, id, ref)}
+  end
+
+  defp heart_packet(id) do
+    %Packet{
+      ack: false,
+      child_sensor_id: @internal_NODE_SENSOR_ID,
+      command: @command_INTERNAL,
+      node_id: id,
+      payload: "",
+      type: @internal_HEARTBEAT_REQUEST
+    }
   end
 end
