@@ -6,7 +6,7 @@ defmodule MySensors.BroadcastTest do
 
   test "gets node object notifications on update" do
     Broadcast.subscribe()
-    node = Context.new_node()
+    {:ok, node} = Context.new_node()
     Context.update_node(node, %{sketch_name: "some name"})
     id = node.id
     sketch_name = "some name"
@@ -15,7 +15,7 @@ defmodule MySensors.BroadcastTest do
 
   test "gets node object notifications on delete" do
     Broadcast.subscribe()
-    node = Context.new_node()
+    {:ok, node} = Context.new_node()
     id = node.id
     Context.delete_node(id)
     assert_receive {:my_sensors, {:delete, %Node{id: ^id}}}

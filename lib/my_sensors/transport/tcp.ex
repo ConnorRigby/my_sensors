@@ -38,7 +38,7 @@ defmodule MySensors.Transport.TCP do
     {:noreply, state}
   end
 
-  def handle_info(info, state) do
+  def handle_info(_info, state) do
     {:noreply, state}
   end
 

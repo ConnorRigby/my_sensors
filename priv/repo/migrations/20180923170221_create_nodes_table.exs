@@ -3,6 +3,7 @@ defmodule MySensors.Repo.Migrations.CreateNodesTable do
 
   def change do
     create table("nodes") do
+      add :name, :string
       add :battery_level, :float
       add :protocol, :string
       add :sketch_name, :string

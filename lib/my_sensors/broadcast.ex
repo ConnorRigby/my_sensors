@@ -9,8 +9,6 @@ defmodule MySensors.Broadcast do
   and `data` will be a `Node` struct.
   """
 
-  alias MySensors.Node
-  require Logger
   @name MySensorsRegistry
 
   @doc false

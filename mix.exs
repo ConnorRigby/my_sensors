@@ -4,14 +4,14 @@ defmodule MySensors.Mixfile do
   def project do
     [
       app: :my_sensors,
-      version: "0.1.0-rc2",
+      version: "0.2.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
       description: description(),
       test_coverage: [tool: ExCoveralls],
-      dialyzer: [plt_add_apps: [:mnesia], plt_add_deps: :apps_direct],
+      dialyzer: [plt_add_apps: [], plt_add_deps: :apps_direct],
       preferred_cli_env: [
         test: :test,
         coveralls: :test,

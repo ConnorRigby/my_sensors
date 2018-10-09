@@ -4,8 +4,9 @@ defmodule MySensors.Node do
   
   use Ecto.Schema
   import Ecto.Changeset
-
+  
   schema "nodes" do
+    field :name, :string
     field :battery_level, :float
     field :protocol, :string
     field :sketch_name, :string
@@ -15,12 +16,11 @@ defmodule MySensors.Node do
     timestamps()
   end
 
-  @optional [:battery_level, :protocol, :sketch_name, :sketch_version, :config]
+  @optional [:id, :name, :battery_level, :protocol, :sketch_name, :sketch_version, :config]
 
   def changeset(node, params \\ %{}) do
     node
     |> cast(params, @optional)
-    |> validate_required([])
   end
 
   @type t :: %__MODULE__{

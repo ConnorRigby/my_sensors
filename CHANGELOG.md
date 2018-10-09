@@ -1,3 +1,6 @@
+# 0.2.0
+* Bring Ecto back lol
+
 # 0.1.0-rc1
 * Initial proof of concept.
 * Ecto usage is difficult as a library app.

@@ -24,16 +24,20 @@ defmodule MySensors.Context do
   @doc "Get all nodes."
   @spec all_nodes :: [Node.t()]
   def all_nodes do
-    Repo.all(Node, preload: :sensors)
+    MySensors.Repo.all(from n in MySensors.Node, preload: :sensors)
   end
 
   @doc "Get a nenw node."
-  @spec new_node :: Node.t()
-  def new_node do
+  @spec new_node(map) :: {:ok, Node.t()} | {:error, term}
+  def new_node(params \\ %{}) do
     %Node{}
-    |> Node.changeset(%{})
-    |> Repo.insert!()
-    |> Repo.preload(:sensors)
+    |> Node.changeset(params)
+    |> Repo.insert()
+    |> case do
+      {:ok, node} -> 
+        {:ok, Repo.preload(node, :sensors)}
+      {:error, _} = error -> error
+    end
     |> do_dispatch(:insert_or_update)
   end
 
@@ -56,7 +60,7 @@ defmodule MySensors.Context do
       }) do
     case get_node(node_id) do
       %Node{} = node -> update_node(node, %{protocol: protocol})
-      nil -> {:error, :no_node}
+      nil -> new_node(%{id: node_id, protocol: protocol})
     end
   end
 
@@ -73,7 +77,7 @@ defmodule MySensors.Context do
       }) do
     case get_node(node_id) do
       %Node{} = node -> update_node(node, %{config: config})
-      nil -> {:error, :no_node}
+      nil -> new_node(%{id: node_id, config: config})
     end
   end
 
@@ -95,8 +99,7 @@ defmodule MySensors.Context do
           %Node{} = node ->
             update_node(node, %{battery_level: battery_level})
 
-          nil ->
-            {:error, :no_node}
+          nil -> new_node(%{id: node_id, battery_level: battery_level})
         end
     end
   end
@@ -114,8 +117,7 @@ defmodule MySensors.Context do
       %Node{} = node ->
         update_node(node, %{sketch_name: sketch_name})
 
-      nil ->
-        {:error, :no_node}
+      nil -> new_node(%{id: node_id, sketch_name: sketch_name})
     end
   end
 
@@ -132,8 +134,7 @@ defmodule MySensors.Context do
       %Node{} = node ->
         update_node(node, %{sketch_version: sketch_version})
 
-      nil ->
-        {:error, :no_node}
+      nil -> new_node(%{id: node_id, sketch_version: sketch_version})
     end
   end
 
@@ -152,14 +153,15 @@ defmodule MySensors.Context do
       nil ->
         case get_node(node_id) do
           nil ->
-            {:error, :no_node}
-
+            {:ok, node} = new_node(%{id: node_id})
+            node
           %Node{} = node ->
-            Ecto.build_assoc(node, :sensors)
-            |> Sensor.changeset(%{child_sensor_id: sid, type: to_string(type)})
-            |> Repo.insert()
-            |> do_dispatch(:insert_or_update)
+            node
         end
+        |> Ecto.build_assoc(:sensors)
+        |> Sensor.changeset(%{child_sensor_id: sid, type: to_string(type)})
+        |> Repo.insert()
+        |> do_dispatch(:insert_or_update)
     end
 
   end
@@ -173,30 +175,24 @@ defmodule MySensors.Context do
         payload: payload,
         command: @command_SET
       }) do
+    {value, _} = Float.parse(payload)
     case get_sensor(node_id, sid) do
       %Sensor{} = sensor ->
-        {value, _} = Float.parse(payload)
-        Ecto.build_assoc(sensor, :sensor_values)
-        |> SensorValue.changeset(%{type: to_string(type), value: value})
-        |> Repo.insert()
-        |> do_dispatch(:insert_or_update)
+        sensor
       nil ->
-        {:error, :no_sensor}
+        {:ok, %Sensor{} = sensor} = save_sensor(%Packet{node_id: node_id, child_sensor_id: sid, type: type, command: @command_PRESENTATION})
+        sensor
     end
+    |> Ecto.build_assoc(:sensor_values)
+    |> SensorValue.changeset(%{type: to_string(type), value: value})
+    |> Repo.insert()
+    |> do_dispatch(:insert_or_update)
   end
 
   @doc "Get a sensor from node_id and sensor_id"
   @spec get_sensor(integer, integer) :: Sensor.t() | nil
   def get_sensor(node_id, child_sensor_id) do
-    case all_sensors(node_id) do
-      sensors when is_list(sensors) ->
-        Enum.find(sensors, fn %Sensor{child_sensor_id: sid} ->
-          child_sensor_id == sid
-        end)
-
-      nil ->
-        nil
-    end
+    Repo.one(from s in Sensor, where: s.node_id == ^node_id and s.child_sensor_id == ^child_sensor_id)
   end
 
   @doc "Get all sensors."
@@ -208,16 +204,27 @@ defmodule MySensors.Context do
     end
   end
 
+  def all_sensor_values(node_id, child_sensor_id) do
+    case get_sensor(node_id, child_sensor_id) do
+      %Sensor{} = sensor -> 
+        Repo.preload(sensor, :sensor_values)
+        |> Map.get(:sensor_values)
+      e -> e
+    end
+  end
+
   def update_sensor(%Sensor{} = sensor, params) do
     case get_node(sensor.node_id) do
       %Node{} = node ->
-        Ecto.build_assoc(node, :sensors, sensor)
-        |> Sensor.changeset(params)
-        |> Repo.update()
-        |> do_dispatch(:insert_or_update)
+        node
       nil ->
-        {:error, :no_node}
+        {:ok, node} = new_node(%{id: sensor.node_id})
+        node
     end
+    |> Ecto.build_assoc(:sensors, sensor)
+    |> Sensor.changeset(params)
+    |> Repo.update()
+    |> do_dispatch(:insert_or_update)
   end
 
   defp do_dispatch({:error, _} = data, _) do

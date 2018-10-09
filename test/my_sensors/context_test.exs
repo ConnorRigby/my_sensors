@@ -10,8 +10,8 @@ defmodule MySensors.ContextTest do
   test "Generates nodes" do
     node_b = Context.new_node()
     node_a = Context.new_node()
-    assert match?(%Node{}, node_a)
-    assert match?(%Node{}, node_b)
+    assert match?({:ok, %Node{}}, node_a)
+    assert match?({:ok, %Node{}}, node_b)
 
     refute match?(^node_a, node_b)
   end
@@ -24,7 +24,7 @@ defmodule MySensors.ContextTest do
   end
 
   test "saves config from a packet" do
-    node = Context.new_node()
+    {:ok, node} = Context.new_node()
 
     packet = %Packet{
       node_id: node.id,
@@ -41,7 +41,7 @@ defmodule MySensors.ContextTest do
   end
 
   test "saves protocol from a packet" do
-    node = Context.new_node()
+    {:ok, node} = Context.new_node()
 
     packet = %Packet{
       node_id: node.id,
@@ -57,7 +57,7 @@ defmodule MySensors.ContextTest do
   end
 
   test "saves battery level from a packet" do
-    node = Context.new_node()
+    {:ok, node} = Context.new_node()
 
     packet = %Packet{
       node_id: node.id,
@@ -74,7 +74,7 @@ defmodule MySensors.ContextTest do
   end
 
   test "saves a node sketch name from a packet" do
-    node = Context.new_node()
+    {:ok, node} = Context.new_node()
 
     packet = %Packet{
       node_id: node.id,
@@ -91,7 +91,7 @@ defmodule MySensors.ContextTest do
   end
 
   test "saves a node sketch version from a packet" do
-    node = Context.new_node()
+    {:ok, node} = Context.new_node()
 
     packet = %Packet{
       node_id: node.id,
@@ -108,7 +108,7 @@ defmodule MySensors.ContextTest do
   end
 
   test "saves a sensor from a packet" do
-    node = Context.new_node()
+    {:ok, node} = Context.new_node()
 
     packet = %Packet{
       node_id: node.id,
@@ -125,7 +125,7 @@ defmodule MySensors.ContextTest do
   end
 
   test "saves a sensorvalue to a sensor" do
-    node = Context.new_node()
+    {:ok, node} = Context.new_node()
 
     packet = %Packet{
       node_id: node.id,
@@ -152,8 +152,8 @@ defmodule MySensors.ContextTest do
     assert sv.value == 1.0
   end
 
-  test "Won't save a sensor value for an unknown sensor" do
-    node = Context.new_node()
+  test "Creates a sensor for a sensor_value if it doesn't exist" do
+    {:ok, node} = Context.new_node()
 
     sensor_value_packet = %Packet{
       node_id: node.id,
@@ -165,11 +165,12 @@ defmodule MySensors.ContextTest do
     }
 
     res = Context.save_sensor_value(sensor_value_packet)
-    assert match?({:error, :no_sensor}, res)
+    assert Context.get_sensor(node.id, 500)
+    assert match?({:ok, %SensorValue{}}, res)
   end
 
   test "gets sensors" do
-    node = Context.new_node()
+    {:ok, node} = Context.new_node()
 
     packet = %Packet{
       node_id: node.id,
@@ -198,7 +199,7 @@ defmodule MySensors.ContextTest do
   end
 
   test "saving a sensor twice doesnt cause duplicates" do
-    node = Context.new_node()
+    {:ok, node} = Context.new_node()
 
     packet = %Packet{
       node_id: node.id,

@@ -56,7 +56,7 @@ defmodule MySensors.Gateway do
     {:ok, struct(State, transports: [])}
   end
 
-  def terminate(reason, _state) do
+  def terminate(_reason, _state) do
     Logger.info("Gateway stopping")
   end
 
@@ -82,7 +82,7 @@ defmodule MySensors.Gateway do
 
         {:error, reason} ->
           Logger.error("Failed to start transport: #{transport} - #{inspect(reason)}")
-          {:reply, :error, state}
+          {:reply, {:error, reason}, state}
       end
     end
   end
@@ -262,7 +262,7 @@ defmodule MySensors.Gateway do
          %Packet{command: @command_INTERNAL, type: @internal_LOG_MESSAGE} = packet,
          state
        ) do
-    Logger.info("Node #{packet.node_id} => #{packet.payload}")
+    Logger.info("Node #{packet.node_id} => #{packet.payload}", node_id: packet.node_id)
     state
   end
 
@@ -334,6 +334,7 @@ defmodule MySensors.Gateway do
   @spec send_next_available_id(Packet.t(), State.t()) :: {:ok, Node.t()} | {:error, term}
   defp send_next_available_id(%Packet{}, state) do
     node = Context.new_node()
+    Logger.debug "New node: #{node.id}"
 
     packet_opts = [
       node_id: @internal_BROADCAST_ADDRESS,
