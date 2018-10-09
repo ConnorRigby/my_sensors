@@ -10,7 +10,6 @@ jobs:
       - restore_cache:
           keys:
             - v5-dependency-cache-{{ checksum "mix.lock" }}
-            - v5-dependency-cache
       - run: mix local.hex --force
       - run: mix local.rebar --force
       - run: mix deps.get
@@ -29,7 +28,6 @@ jobs:
       - restore_cache:
           keys:
             - v5-plt-cache-{{ checksum "mix.lock" }}
-            - v5-plt-cache
       - run: mix dialyzer --plt
       - save_cache:
           key: v5-plt-cache-{{ checksum "mix.lock" }}
