@@ -11,7 +11,6 @@ defmodule MySensors.Mixfile do
       package: package(),
       description: description(),
       test_coverage: [tool: ExCoveralls],
-      dialyzer: [plt_add_apps: [], plt_add_deps: :apps_direct],
       preferred_cli_env: [
         test: :test,
         coveralls: :test,
@@ -34,7 +33,7 @@ defmodule MySensors.Mixfile do
   defp deps do
     [
       {:nerves_uart, "~> 1.2"},
-      {:ecto, "~> 2.2"},
+      {:ecto, "2.2.5"},
       {:sqlite_ecto2, "~> 2.2", optional: true},
       
       {:ex_doc, "~> 0.19", only: [:dev, :test]},
