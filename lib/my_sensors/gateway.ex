@@ -333,7 +333,7 @@ defmodule MySensors.Gateway do
 
   @spec send_next_available_id(Packet.t(), State.t()) :: {:ok, Node.t()} | {:error, term}
   defp send_next_available_id(%Packet{}, state) do
-    node = Context.new_node()
+    {:ok, node} = Context.new_node()
     Logger.debug "New node: #{node.id}"
 
     packet_opts = [

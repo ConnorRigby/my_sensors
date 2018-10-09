@@ -180,7 +180,14 @@ defmodule MySensors.Context do
       %Sensor{} = sensor ->
         sensor
       nil ->
-        {:ok, %Sensor{} = sensor} = save_sensor(%Packet{node_id: node_id, child_sensor_id: sid, type: type, command: @command_PRESENTATION})
+        pkt = %Packet{node_id: node_id,
+          ack: false,
+          payload: "",
+          child_sensor_id: sid, 
+          type: type, 
+          command: @command_PRESENTATION
+        }
+        {:ok, %Sensor{} = sensor} = save_sensor(pkt)
         sensor
     end
     |> Ecto.build_assoc(:sensor_values)
