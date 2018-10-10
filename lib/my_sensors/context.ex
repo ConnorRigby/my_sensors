@@ -71,7 +71,7 @@ defmodule MySensors.Context do
       {:ok, node}
     else
       _ -> new_node(%{id: node_id})
-    end 
+    end
   end
 
   @doc "Saves the protocol of a node from a packet"

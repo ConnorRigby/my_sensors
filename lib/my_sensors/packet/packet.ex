@@ -26,18 +26,6 @@ defmodule MySensors.Packet do
 
   use MySensors.Packet.Constants
 
-  def binary(val) do
-    %MySensors.Packet{
-      ack: false,
-      child_sensor_id: 1,
-      node_id: 2,
-      payload: val,
-      command: :command_set,
-      type: :value_status
-    }
-    |> MySensors.Gateway.write_packet()
-  end
-
   @doc "Parse a packet `command`."
   @compile {:inline, command: 1}
   def command(0), do: {:ok, @command_PRESENTATION}

@@ -9,7 +9,8 @@ defmodule MySensors.Application do
     children = [
       {MySensors.Repo, []},
       {MySensors.Broadcast, []},
-      {MySensors.Gateway, []}
+      {MySensors.Gateway, []},
+      {MySensors.Triggers.Worker, []}
     ]
 
     opts = [strategy: :one_for_one, name: __MODULE__]
