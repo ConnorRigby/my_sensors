@@ -8,6 +8,7 @@ defmodule MySensors.Repo.Migrations.CreateSensorTriggersTable do
       add :valid_to_datetime, :utc_datetime
       add :valid_from_time, :time
       add :valid_to_time, :time
+      add :value_type, :string
       add :value_condition, :string
       add :value_comparison, :float
       add :payload, :float

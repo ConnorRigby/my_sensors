@@ -2,6 +2,42 @@ defmodule MySensors.Triggers do
   require Logger
   alias MySensors.{Repo, Sensor, SensorTrigger, SensorValue}
   import Ecto.Query
+  use MySensors.Packet.Constants
+
+  def blah do
+    s0 = MySensors.Context.get_sensor(1, 0)
+    s1 = MySensors.Context.get_sensor(2, 1)
+
+    MySensors.Triggers.new_trigger(s0, s1, %{
+      value_type: to_string(@value_STATUS),
+      value_comparison: 0,
+      value_condition: ">",
+      payload: 0,
+      name: "hum > 0",
+      valid_from_datetime: dt(1, 1, 1069, 0, 0),
+      valid_to_datetime: dt(1, 1, 2020, 0, 0)
+    })
+  end
+
+  defp dt(month, day, year, hour, minute) do
+    %DateTime{
+      month: month,
+      day: day,
+      year: year,
+      hour: hour,
+      minute: minute,
+      second: 0,
+      time_zone: "Etc/UTC",
+      std_offset: 0,
+      utc_offset: 0,
+      zone_abbr: "UTC"
+    }
+  end
+
+  defp time(hour, minute, second \\ 0) do
+    {:ok, t} = Time.new(hour, minute, second)
+    t
+  end
 
   @doc """
   Creates a new trigger. This trigger will `execute` `execute`'s sensor based on

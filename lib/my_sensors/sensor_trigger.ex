@@ -15,6 +15,7 @@ defmodule MySensors.SensorTrigger do
     field(:valid_to_time, :time, default: @default_valid_to_time)
     field(:value_condition, :string)
     field(:value_comparison, :float)
+    field(:value_type, :string)
     field(:payload, :float)
     belongs_to(:executor_sensor, Sensor)
     belongs_to(:executee_sensor, Sensor)
@@ -35,6 +36,7 @@ defmodule MySensors.SensorTrigger do
     :valid_to_datetime,
     :value_condition,
     :value_comparison,
+    :value_type,
     :payload
   ]
 

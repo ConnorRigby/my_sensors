@@ -8,6 +8,7 @@ defmodule MySensors.Application do
 
     children = [
       {MySensors.Repo, []},
+      {MySensors.Migrator, []},
       {MySensors.Broadcast, []},
       {MySensors.Gateway, []},
       {MySensors.Triggers.Worker, []}

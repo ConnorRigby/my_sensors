@@ -40,7 +40,7 @@ defmodule MySensors.Triggers.Worker do
       node_id: sensor.node_id,
       command: @command_SET,
       payload: trigger.payload,
-      type: String.to_existing_atom(sensor.type)
+      type: String.to_existing_atom(trigger.value_type)
     }
     |> MySensors.Gateway.write_packet()
   end
