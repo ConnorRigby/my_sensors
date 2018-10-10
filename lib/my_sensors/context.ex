@@ -255,6 +255,21 @@ defmodule MySensors.Context do
     end
   end
 
+  def latest_sensor_value(node_id, child_sensor_id) do
+    case get_sensor(node_id, child_sensor_id) do
+      %Sensor{} = sensor ->
+        Repo.one(
+          from(sv in SensorValue,
+            where: sv.sensor_id == ^sensor.id,
+            limit: 1
+          )
+        )
+
+      e ->
+        e
+    end
+  end
+
   def update_sensor(%Sensor{} = sensor, params) do
     case get_node(sensor.node_id) do
       %Node{} = node ->

@@ -314,9 +314,9 @@ defmodule MySensors.Packet do
   def ack(@ack_FALSE), do: {:ok, 0}
   def ack(_), do: {:error, @ack_UNKNOWN}
 
-  @type type :: atom
-  @type command :: atom
-  @type ack :: atom
+  @type type :: String.t
+  @type command :: String.t
+  @type ack :: String.t
   @type payload :: binary
   @type node_id :: integer
   @type child_sensor_id :: integer

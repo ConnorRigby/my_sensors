@@ -23,10 +23,10 @@ defmodule MySensors.Transport.LocalTest do
     assert_receive %Packet{
       ack: false,
       child_sensor_id: 255,
-      command: :command_internal,
+      command: "command_internal",
       node_id: 255,
       payload: _,
-      type: :internal_time
+      type: "internal_time"
     }
 
     Local.stop()

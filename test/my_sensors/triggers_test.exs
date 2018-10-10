@@ -1,6 +1,6 @@
 defmodule MySensors.TriggersTest do
   use ExUnit.Case
-  alias MySensors.{Node, Context, Packet}
+  alias MySensors.{Context, Packet}
   use Packet.Constants
   alias MySensors.Triggers
 
@@ -48,7 +48,7 @@ defmodule MySensors.TriggersTest do
         node_id: node.id,
         child_sensor_id: child_sensor_id,
         type: type,
-        command: :command_presentation
+        command: @command_PRESENTATION
       }
 
       {:ok, sensor} = Context.save_sensor(sensor_packet)
