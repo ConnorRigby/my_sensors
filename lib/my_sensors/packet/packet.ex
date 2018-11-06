@@ -306,6 +306,8 @@ defmodule MySensors.Packet do
   def type(@command_INTERNAL, @internal_DEBUG), do: {:ok, 28}
 
   def type(@command_INTERNAL, _), do: {:error, @internal_UNKNOWN}
+  
+  def type(@command_STREAM, _), do: {:error, @stream_UNKNOWN}
 
   @compile {:inline, ack: 1}
   def ack(1), do: {:ok, @ack_TRUE}

@@ -151,6 +151,8 @@ defmodule MySensors.Packet.Constants do
       @internal_DEBUG "internal_debug"
       @internal_UNKNOWN "internal_unknown"
 
+      @stream_UNKNOWN "stream_unknown"
+
       @ack_TRUE true
       @ack_FALSE false
       @ack_UNKNOWN "ack_unknown"

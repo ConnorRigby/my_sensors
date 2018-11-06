@@ -79,6 +79,7 @@ defmodule MySensors.Gateway do
     else
       case start_transport(transport, opts) do
         {:ok, pid} ->
+          Process.link(pid)
           ref = Process.monitor(pid)
 
           tp_opts = [
